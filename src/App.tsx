@@ -1,13 +1,14 @@
-import { getTodayInMoscow, addThirtyMinutes } from './utils/date'
+import { getTodayInMoscow } from './utils/date'
 import './App.css'
 import { rooms } from './data/rooms'
 import RoomCard from './components/RoomCard'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Room } from './data/rooms'
 import Schedule from './components/Schedule'
-import { bookings as initialBookings } from './data/bookings'
 import type { Booking } from './data/bookings'
 import type { BookingSelection } from './types/booking'
+import { loadBookings, saveBookings } from './utils/bookingStorage'
+import BookingForm from './components/BookingForm'
 
 function App() {
   const [minCapacity, setMinCapacity] = useState(0)
@@ -15,7 +16,35 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(getTodayInMoscow)
   const [bookingSelection, setBookingSelection] =
     useState<BookingSelection | null>(null)
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings)
+  const [storageError, setStorageError] = useState('')
+
+  const [storageState] = useState(() => {
+    try {
+      return {
+        bookings: loadBookings(),
+        canSave: true,
+      }
+    } catch {
+      return {
+        bookings: [] as Booking[],
+        canSave: false,
+      }
+    }
+  })
+
+  const [bookings, setBookings] = useState<Booking[]>(storageState.bookings)
+
+  useEffect(() => {
+    if (!storageState.canSave) {
+      return
+    }
+
+    try {
+      saveBookings(bookings)
+    } catch {
+      setStorageError('Не удалось сохранить бронирования в браузере.')
+    }
+  }, [bookings, storageState.canSave])
 
   const selectedRoom = rooms.find(
     (room) => room.id === selectedRoomId
@@ -29,6 +58,14 @@ function App() {
   }
   return (
     <main className="app">
+      {!storageState.canSave && (
+        <p role="alert">
+          Не удалось прочитать сохранённые бронирования. Новые записи
+          пока не будут сохраняться в браузере.
+        </p>
+      )}
+
+      {storageError && <p role="alert">{storageError}</p>}
       <header className="page-header">
         <p className="page-header__label">Офис · Москва</p>
         <h1>Бронирование переговорных</h1>
@@ -44,33 +81,23 @@ function App() {
       />
 
       {bookingSelection && (
-        <section
-          className="booking-preview"
-          aria-labelledby="booking-preview-heading"
-        >
-          <h2 id="booking-preview-heading">Новое бронирование</h2>
-
-          <p>
-            Переговорная:{' '}
-            {rooms.find((room) => room.id === bookingSelection.roomId)?.name}
-          </p>
-
-          <p>Дата: {bookingSelection.date}</p>
-
-          <p>
-            Время: {bookingSelection.startTime}–
-            {addThirtyMinutes(bookingSelection.startTime)}
-          </p>
-
-          <p>Следующим шагом добавим поля и сохранение бронирования.</p>
-
-          <button
-            type="button"
-            onClick={() => setBookingSelection(null)}
-          >
-            Закрыть
-          </button>
-        </section>
+        <BookingForm
+          key={`${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}`}
+          selection={bookingSelection}
+          roomName={
+            rooms.find((room) => room.id === bookingSelection.roomId)?.name ??
+            'Неизвестная переговорная'
+          }
+          bookings={bookings}
+          onSave={(newBooking) => {
+            setBookings((currentBookings) => [
+              ...currentBookings,
+              newBooking,
+            ])
+            setBookingSelection(null)
+          }}
+          onClose={() => setBookingSelection(null)}
+        />
       )}
 
       <section aria-labelledby="rooms-heading">

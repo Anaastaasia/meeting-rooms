@@ -291,3 +291,37 @@
   background-color: #ffffff;
   cursor: pointer;
 }
+.booking-form {
+  display: grid;
+  gap: 8px;
+  max-width: 360px;
+  margin-top: 20px;
+}
+
+.booking-form label {
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.booking-form input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #64748b;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.booking-form__error {
+  margin-top: 8px;
+  color: #b91c1c;
+}
+
+.booking-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.booking-form__actions button {
+  margin-top: 12px;
+}
