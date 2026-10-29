@@ -325,3 +325,38 @@
 .booking-form__actions button {
   margin-top: 12px;
 }
+.booking-list {
+  margin-top: 32px;
+}
+
+.booking-list__items {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.booking-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #dce1e8;
+  border-radius: 12px;
+}
+
+.booking-list__item h3 {
+  margin: 0 0 8px;
+}
+
+.booking-list__item p {
+  margin: 4px 0;
+}
+
+@media (max-width: 600px) {
+  .booking-list__item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

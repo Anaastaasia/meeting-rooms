@@ -9,6 +9,7 @@ import type { Booking } from './data/bookings'
 import type { BookingSelection } from './types/booking'
 import { loadBookings, saveBookings } from './utils/bookingStorage'
 import BookingForm from './components/BookingForm'
+import BookingList from './components/BookingList'
 
 function App() {
   const [minCapacity, setMinCapacity] = useState(0)
@@ -56,6 +57,11 @@ function App() {
   function handleSelectRoom(room: Room) {
     setSelectedRoomId(room.id)
   }
+  function handleCancelBooking(bookingId: string) {
+    setBookings((currentBookings) =>
+      currentBookings.filter((booking) => booking.id !== bookingId)
+    )
+  }
   return (
     <main className="app">
       {!storageState.canSave && (
@@ -99,6 +105,11 @@ function App() {
           onClose={() => setBookingSelection(null)}
         />
       )}
+
+      <BookingList
+        bookings={bookings}
+        onCancel={handleCancelBooking}
+      />
 
       <section aria-labelledby="rooms-heading">
         <h2 id="rooms-heading">Переговорные</h2>
