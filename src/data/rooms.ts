@@ -1,10 +1,14 @@
+export type RoomImage = {
+  src: string
+  alt: string
+}
+
 export type Room = {
   id: string
   name: string
   capacity: number
   equipment: string[]
-  image: string
-  imageAlt: string
+  images: RoomImage[]
 }
 
 export const rooms: Room[] = [
@@ -13,31 +17,79 @@ export const rooms: Room[] = [
     name: 'Эльбрус',
     capacity: 6,
     equipment: ['Телевизор', 'Маркерная доска'],
-    image: '/rooms/elbrus.jpg',
-    imageAlt: 'Переговорная Эльбрус: стол, 6 стульев',
+    images: [
+      {
+        src: '/rooms/elbrus.jpg',
+        alt: 'Переговорная Эльбрус: общий вид',
+      },
+      {
+        src: '/rooms/elbrus-2.jpg',
+        alt: 'Переговорная Эльбрус: второй ракурс',
+      },
+      {
+        src: '/rooms/elbrus-3.jpg',
+        alt: 'Переговорная Эльбрус: третий ракурс',
+      },
+    ],
   },
   {
     id: 'altai',
     name: 'Алтай',
     capacity: 10,
     equipment: ['Проектор', 'Видеосвязь'],
-    image: '/rooms/altai.jpg',
-    imageAlt: 'Переговорная Алтай: стол, 10 стульев, доска',
+    images: [
+      {
+        src: '/rooms/altai.jpg',
+        alt: 'Переговорная Алтай: стол, 10 стульев, доска',
+      },
+      {
+        src: '/rooms/altai-2.jpg',
+        alt: 'Переговорная Алтай: второй ракурс',
+      },
+      {
+        src: '/rooms/altai-3.jpg',
+        alt: 'Переговорная Алтай: третий ракурс',
+      },
+    ],
   },
   {
     id: 'baikal',
     name: 'Байкал',
     capacity: 4,
     equipment: ['Телевизор'],
-    image: '/rooms/baikal.jpg',
-    imageAlt: 'Переговорная Байкал: стол, 4 стула, телевизор',
+    images: [
+      {
+        src: '/rooms/baikal.jpg',
+        alt: 'Переговорная Байкал: стол, 4 стула, телевизор',
+      },
+      {
+        src: '/rooms/baikal-2.jpg',
+        alt: 'Переговорная Байкал: второй ракурс',
+      },
+      {
+        src: '/rooms/baikal-3.jpg',
+        alt: 'Переговорная Байкал: третий ракурс',
+      },
+    ],
   },
   {
     id: 'sibir',
     name: 'Сибирь',
-    capacity: 8,
+    capacity: 6,
     equipment: ['Проектор'],
-    image: '/rooms/sibir.jpg',
-    imageAlt: 'Переговорная Сибирь: стол, 8 стульев, проектор',
+    images: [
+      {
+        src: '/rooms/sibir.jpg',
+        alt: 'Переговорная Сибирь: общий вид',
+      },
+      {
+        src: '/rooms/sibir-2.jpg',
+        alt: 'Переговорная Сибирь: второй ракурс',
+      },
+      {
+        src: '/rooms/sibir-3.jpg',
+        alt: 'Переговорная Сибирь: третий ракурс',
+      },
+    ],
   },
 ]

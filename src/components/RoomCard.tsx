@@ -6,14 +6,17 @@ type RoomCardProps = {
 }
 
 function RoomCard({ room, onSelect }: RoomCardProps) {
+    const coverImage = room.images[0]
     return (
         <article className="room-card">
-            <img
-                className="room-card__image"
-                src={room.image}
-                alt={room.imageAlt}
-                loading="lazy"
-            />
+            {coverImage && (
+                <img
+                    className="room-card__image"
+                    src={coverImage.src}
+                    alt={coverImage.alt}
+                    loading="lazy"
+                />
+            )}
 
             <div className="room-card__content">
                 <h3>{room.name}</h3>

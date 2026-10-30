@@ -373,16 +373,6 @@
   gap: 16px;
 }
 
-.room-details__image {
-  display: block;
-  width: 100%;
-  max-width: 720px;
-  max-height: 400px;
-  margin-top: 16px;
-  object-fit: cover;
-  border-radius: 12px;
-}
-
 @media (max-width: 600px) {
   .room-details__header {
     flex-direction: column;
@@ -422,4 +412,30 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+.room-gallery {
+  width: 100%;
+  max-width: 720px;
+  margin-top: 16px;
+}
+
+.room-gallery__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.room-gallery__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.room-gallery__controls button {
+  min-width: 44px;
+  min-height: 44px;
 }

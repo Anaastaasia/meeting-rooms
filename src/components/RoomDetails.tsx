@@ -2,6 +2,7 @@ import type { Room } from '../data/rooms'
 import type { Booking } from '../data/bookings'
 import type { BookingSelection } from '../types/booking'
 import Schedule from './Schedule'
+import RoomGallery from './RoomGallery'
 
 type RoomDetailsProps = {
     room: Room
@@ -35,11 +36,7 @@ function RoomDetails({
                 </button>
             </div>
 
-            <img
-                className="room-details__image"
-                src={room.image}
-                alt={room.imageAlt}
-            />
+            <RoomGallery key={room.id} images={room.images} />
 
             <p>Вместимость: {room.capacity} чел.</p>
             <p>Время работы: 08:00–20:00, Москва.</p>
