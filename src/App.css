@@ -443,4 +443,30 @@
   background-color: #f3f4f6;
   cursor: not-allowed;
   box-shadow: none;
+}.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.app-nav a {
+  padding: 10px 16px;
+  color: #374151;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.app-nav a:hover {
+  background-color: #f3f4f6;
+}
+
+.app-nav a.active {
+  color: #fff;
+  background-color: #2563eb;
+}
+
+.app-nav a:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
 }

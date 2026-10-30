@@ -12,6 +12,7 @@ import BookingForm from './components/BookingForm'
 import BookingList from './components/BookingList'
 import RoomDetails from './components/RoomDetails'
 import BookingDialog from './components/BookingDialog'
+import { Link, NavLink, Route, Routes } from 'react-router'
 
 function App() {
   const [minCapacity, setMinCapacity] = useState(0)
@@ -75,101 +76,151 @@ function App() {
 
     updateBookings(nextBookings)
   }
-  return (
-    <main className="app">
-      {!storageState.canSave && (
-        <p role="alert">
-          Не удалось прочитать сохранённые бронирования. Новые записи
-          пока не будут сохраняться в браузере.
-        </p>
-      )}
+ return (
+  <main className="app">
+    {!storageState.canSave && (
+      <p role="alert">
+        Не удалось прочитать сохранённые бронирования. Новые записи
+        пока не будут сохраняться в браузере.
+      </p>
+    )}
 
-      {storageError && <p role="alert">{storageError}</p>}
-      <header className="page-header">
-        <p className="page-header__label">Офис · Москва</p>
-        <h1>Бронирование переговорных</h1>
-        <p>Выбери комнату и удобное время.</p>
-      </header>
+    {storageError && <p role="alert">{storageError}</p>}
 
-      <Schedule
-        rooms={filteredRooms}
-        bookings={bookings}
-        selectedDate={selectedDate}
-        onDateChange={setSelectedDate}
-        onSelectSlot={setBookingSelection}
-      />
+    <header className="page-header">
+      <p className="page-header__label">Офис · Москва</p>
+      <h1>Бронирование переговорных</h1>
+      <p>Выбери комнату и удобное время.</p>
+    </header>
 
-      {bookingSelection && (
-        <BookingDialog onClose={() => setBookingSelection(null)}>
-          <BookingForm
-            key={`${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}-${bookingSelection.endTime}`}
-            selection={bookingSelection}
-            roomName={
-              rooms.find((room) => room.id === bookingSelection.roomId)?.name ??
-              'Неизвестная переговорная'
-            }
+    <nav className="app-nav" aria-label="Основная навигация">
+      <NavLink to="/" end>
+        Расписание
+      </NavLink>
+
+      <NavLink to="/rooms">
+        Переговорные
+      </NavLink>
+
+      <NavLink to="/bookings">
+        Бронирования
+      </NavLink>
+    </nav>
+
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Schedule
+            rooms={rooms}
             bookings={bookings}
-            onSave={handleSaveBooking}
-            onClose={() => setBookingSelection(null)}
+            selectedDate={selectedDate}
+            onDateChange={setSelectedDate}
+            onSelectSlot={setBookingSelection}
           />
-        </BookingDialog>
-      )}
-
-      <BookingList
-        bookings={bookings}
-        onCancel={handleCancelBooking}
+        }
       />
 
-      <section aria-labelledby="rooms-heading">
-        <h2 id="rooms-heading">Переговорные</h2>
-        <div className="rooms-filter">
-          <label htmlFor="min-capacity">Количество участников</label>
+      <Route
+        path="/rooms"
+        element={
+          <>
+            <section aria-labelledby="rooms-heading">
+              <h2 id="rooms-heading">Переговорные</h2>
 
-          <select
-            id="min-capacity"
-            value={minCapacity}
-            onChange={(event) =>
-              setMinCapacity(Number(event.target.value))
-            }
-          >
-            <option value={0}>Любое</option>
-            <option value={2}>2</option>
-            <option value={4}>4</option>
-            <option value={6}>6</option>
-            <option value={8}>8</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-          </select>
-        </div>
+              <div className="rooms-filter">
+                <label htmlFor="min-capacity">
+                  Количество участников
+                </label>
 
-        <div className="rooms-grid">
-          {filteredRooms.map((room) => (
-            <RoomCard
-              key={room.id}
-              room={room}
-              onSelect={handleSelectRoom}
-            />
-          ))}
-        </div>
-        {filteredRooms.length === 0 && (
-          <p role="status">
-            Нет переговорных с такой вместимостью. Попробуй уменьшить
-            количество участников.
-          </p>
-        )}
-      </section>
-      {selectedRoom && (
-        <RoomDetails
-          key={selectedRoom.id}
-          room={selectedRoom}
+                <select
+                  id="min-capacity"
+                  value={minCapacity}
+                  onChange={(event) =>
+                    setMinCapacity(Number(event.target.value))
+                  }
+                >
+                  <option value={0}>Любое</option>
+                  <option value={2}>2</option>
+                  <option value={4}>4</option>
+                  <option value={6}>6</option>
+                  <option value={8}>8</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                </select>
+              </div>
+
+              <div className="rooms-grid">
+                {filteredRooms.map((room) => (
+                  <RoomCard
+                    key={room.id}
+                    room={room}
+                    onSelect={handleSelectRoom}
+                  />
+                ))}
+              </div>
+
+              {filteredRooms.length === 0 && (
+                <p role="status">
+                  Нет переговорных с такой вместимостью.
+                  Попробуй уменьшить количество участников.
+                </p>
+              )}
+            </section>
+
+            {selectedRoom && (
+              <RoomDetails
+                key={selectedRoom.id}
+                room={selectedRoom}
+                bookings={bookings}
+                selectedDate={selectedDate}
+                onDateChange={setSelectedDate}
+                onSelectSlot={setBookingSelection}
+                onClose={() => setSelectedRoomId(null)}
+              />
+            )}
+          </>
+        }
+      />
+
+      <Route
+        path="/bookings"
+        element={
+          <BookingList
+            bookings={bookings}
+            onCancel={handleCancelBooking}
+          />
+        }
+      />
+
+      <Route
+        path="*"
+        element={
+          <section aria-labelledby="not-found-heading">
+            <h2 id="not-found-heading">Страница не найдена</h2>
+            <p>Проверь адрес или вернись к расписанию.</p>
+            <Link to="/">Открыть расписание</Link>
+          </section>
+        }
+      />
+    </Routes>
+
+    {bookingSelection && (
+      <BookingDialog onClose={() => setBookingSelection(null)}>
+        <BookingForm
+          key={`${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}-${bookingSelection.endTime}`}
+          selection={bookingSelection}
+          roomName={
+            rooms.find((room) => room.id === bookingSelection.roomId)?.name ??
+            'Неизвестная переговорная'
+          }
           bookings={bookings}
-          selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
-          onSelectSlot={setBookingSelection}
-          onClose={() => setSelectedRoomId(null)}
+          onSave={handleSaveBooking}
+          onClose={() => setBookingSelection(null)}
         />
-      )}
-    </main>
+      </BookingDialog>
+    )}
+  </main>
   )
 }
 
