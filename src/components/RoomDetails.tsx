@@ -10,7 +10,6 @@ type RoomDetailsProps = {
     selectedDate: string
     onDateChange: (date: string) => void
     onSelectSlot: (selection: BookingSelection) => void
-    onClose: () => void
 }
 
 function RoomDetails({
@@ -19,7 +18,6 @@ function RoomDetails({
     selectedDate,
     onDateChange,
     onSelectSlot,
-    onClose,
 }: RoomDetailsProps) {
     return (
         <section
@@ -30,10 +28,6 @@ function RoomDetails({
                 <h2 id="selected-room-heading">
                     Переговорная «{room.name}»
                 </h2>
-
-                <button type="button" onClick={onClose}>
-                    Закрыть
-                </button>
             </div>
 
             <RoomGallery key={room.id} images={room.images} />

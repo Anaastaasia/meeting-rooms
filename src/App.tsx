@@ -3,20 +3,18 @@ import './App.css'
 import { rooms } from './data/rooms'
 import RoomCard from './components/RoomCard'
 import { useState } from 'react'
-import type { Room } from './data/rooms'
 import Schedule from './components/Schedule'
 import type { Booking } from './data/bookings'
 import type { BookingSelection } from './types/booking'
 import { loadBookings, saveBookings } from './utils/bookingStorage'
 import BookingForm from './components/BookingForm'
 import BookingList from './components/BookingList'
-import RoomDetails from './components/RoomDetails'
+import RoomPage from './pages/RoomPage'
 import BookingDialog from './components/BookingDialog'
 import { Link, NavLink, Route, Routes } from 'react-router'
 
 function App() {
   const [minCapacity, setMinCapacity] = useState(0)
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState(getTodayInMoscow)
   const [bookingSelection, setBookingSelection] =
     useState<BookingSelection | null>(null)
@@ -59,16 +57,10 @@ function App() {
     setBookingSelection(null)
   }
 
-  const selectedRoom = rooms.find(
-    (room) => room.id === selectedRoomId
-  )
-
   const filteredRooms = rooms.filter(
     (room) => room.capacity >= minCapacity
   )
-  function handleSelectRoom(room: Room) {
-    setSelectedRoomId(room.id)
-  }
+
   function handleCancelBooking(bookingId: string) {
     const nextBookings = bookings.filter(
       (booking) => booking.id !== bookingId
@@ -76,151 +68,150 @@ function App() {
 
     updateBookings(nextBookings)
   }
- return (
-  <main className="app">
-    {!storageState.canSave && (
-      <p role="alert">
-        Не удалось прочитать сохранённые бронирования. Новые записи
-        пока не будут сохраняться в браузере.
-      </p>
-    )}
+  return (
+    <main className="app">
+      {!storageState.canSave && (
+        <p role="alert">
+          Не удалось прочитать сохранённые бронирования. Новые записи
+          пока не будут сохраняться в браузере.
+        </p>
+      )}
 
-    {storageError && <p role="alert">{storageError}</p>}
+      {storageError && <p role="alert">{storageError}</p>}
 
-    <header className="page-header">
-      <p className="page-header__label">Офис · Москва</p>
-      <h1>Бронирование переговорных</h1>
-      <p>Выбери комнату и удобное время.</p>
-    </header>
+      <header className="page-header">
+        <p className="page-header__label">Офис · Москва</p>
+        <h1>Бронирование переговорных</h1>
+        <p>Выбери комнату и удобное время.</p>
+      </header>
 
-    <nav className="app-nav" aria-label="Основная навигация">
-      <NavLink to="/" end>
-        Расписание
-      </NavLink>
+      <nav className="app-nav" aria-label="Основная навигация">
+        <NavLink to="/" end>
+          Расписание
+        </NavLink>
 
-      <NavLink to="/rooms">
-        Переговорные
-      </NavLink>
+        <NavLink to="/rooms">
+          Переговорные
+        </NavLink>
 
-      <NavLink to="/bookings">
-        Бронирования
-      </NavLink>
-    </nav>
+        <NavLink to="/bookings">
+          Бронирования
+        </NavLink>
+      </nav>
 
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <Schedule
-            rooms={rooms}
-            bookings={bookings}
-            selectedDate={selectedDate}
-            onDateChange={setSelectedDate}
-            onSelectSlot={setBookingSelection}
-          />
-        }
-      />
-
-      <Route
-        path="/rooms"
-        element={
-          <>
-            <section aria-labelledby="rooms-heading">
-              <h2 id="rooms-heading">Переговорные</h2>
-
-              <div className="rooms-filter">
-                <label htmlFor="min-capacity">
-                  Количество участников
-                </label>
-
-                <select
-                  id="min-capacity"
-                  value={minCapacity}
-                  onChange={(event) =>
-                    setMinCapacity(Number(event.target.value))
-                  }
-                >
-                  <option value={0}>Любое</option>
-                  <option value={2}>2</option>
-                  <option value={4}>4</option>
-                  <option value={6}>6</option>
-                  <option value={8}>8</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                </select>
-              </div>
-
-              <div className="rooms-grid">
-                {filteredRooms.map((room) => (
-                  <RoomCard
-                    key={room.id}
-                    room={room}
-                    onSelect={handleSelectRoom}
-                  />
-                ))}
-              </div>
-
-              {filteredRooms.length === 0 && (
-                <p role="status">
-                  Нет переговорных с такой вместимостью.
-                  Попробуй уменьшить количество участников.
-                </p>
-              )}
-            </section>
-
-            {selectedRoom && (
-              <RoomDetails
-                key={selectedRoom.id}
-                room={selectedRoom}
-                bookings={bookings}
-                selectedDate={selectedDate}
-                onDateChange={setSelectedDate}
-                onSelectSlot={setBookingSelection}
-                onClose={() => setSelectedRoomId(null)}
-              />
-            )}
-          </>
-        }
-      />
-
-      <Route
-        path="/bookings"
-        element={
-          <BookingList
-            bookings={bookings}
-            onCancel={handleCancelBooking}
-          />
-        }
-      />
-
-      <Route
-        path="*"
-        element={
-          <section aria-labelledby="not-found-heading">
-            <h2 id="not-found-heading">Страница не найдена</h2>
-            <p>Проверь адрес или вернись к расписанию.</p>
-            <Link to="/">Открыть расписание</Link>
-          </section>
-        }
-      />
-    </Routes>
-
-    {bookingSelection && (
-      <BookingDialog onClose={() => setBookingSelection(null)}>
-        <BookingForm
-          key={`${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}-${bookingSelection.endTime}`}
-          selection={bookingSelection}
-          roomName={
-            rooms.find((room) => room.id === bookingSelection.roomId)?.name ??
-            'Неизвестная переговорная'
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Schedule
+              rooms={rooms}
+              bookings={bookings}
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+              onSelectSlot={setBookingSelection}
+            />
           }
-          bookings={bookings}
-          onSave={handleSaveBooking}
-          onClose={() => setBookingSelection(null)}
         />
-      </BookingDialog>
-    )}
-  </main>
+
+        <Route
+          path="/rooms"
+          element={
+            <>
+              <section aria-labelledby="rooms-heading">
+                <h2 id="rooms-heading">Переговорные</h2>
+
+                <div className="rooms-filter">
+                  <label htmlFor="min-capacity">
+                    Количество участников
+                  </label>
+
+                  <select
+                    id="min-capacity"
+                    value={minCapacity}
+                    onChange={(event) =>
+                      setMinCapacity(Number(event.target.value))
+                    }
+                  >
+                    <option value={0}>Любое</option>
+                    <option value={2}>2</option>
+                    <option value={4}>4</option>
+                    <option value={6}>6</option>
+                    <option value={8}>8</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+
+                <div className="rooms-grid">
+                  {filteredRooms.map((room) => (
+                    <RoomCard
+                      key={room.id}
+                      room={room}
+                    />
+                  ))}
+                </div>
+
+                {filteredRooms.length === 0 && (
+                  <p role="status">
+                    Нет переговорных с такой вместимостью.
+                    Попробуй уменьшить количество участников.
+                  </p>
+                )}
+              </section>
+            </>
+          }
+        />
+
+        <Route
+          path="/rooms/:roomId"
+          element={
+            <RoomPage
+              bookings={bookings}
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+              onSelectSlot={setBookingSelection}
+            />
+          }
+        />
+
+        <Route
+          path="/bookings"
+          element={
+            <BookingList
+              bookings={bookings}
+              onCancel={handleCancelBooking}
+            />
+          }
+        />
+
+        <Route
+          path="*"
+          element={
+            <section aria-labelledby="not-found-heading">
+              <h2 id="not-found-heading">Страница не найдена</h2>
+              <p>Проверь адрес или вернись к расписанию.</p>
+              <Link to="/">Открыть расписание</Link>
+            </section>
+          }
+        />
+      </Routes>
+
+      {bookingSelection && (
+        <BookingDialog onClose={() => setBookingSelection(null)}>
+          <BookingForm
+            key={`${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}-${bookingSelection.endTime}`}
+            selection={bookingSelection}
+            roomName={
+              rooms.find((room) => room.id === bookingSelection.roomId)?.name ??
+              'Неизвестная переговорная'
+            }
+            bookings={bookings}
+            onSave={handleSaveBooking}
+            onClose={() => setBookingSelection(null)}
+          />
+        </BookingDialog>
+      )}
+    </main>
   )
 }
 

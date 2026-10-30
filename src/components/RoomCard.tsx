@@ -1,11 +1,11 @@
 import type { Room } from '../data/rooms'
+import { Link } from 'react-router'
 
 type RoomCardProps = {
     room: Room
-    onSelect: (room: Room) => void
 }
 
-function RoomCard({ room, onSelect }: RoomCardProps) {
+function RoomCard({ room }: RoomCardProps) {
     const coverImage = room.images[0]
     return (
         <article className="room-card">
@@ -24,13 +24,12 @@ function RoomCard({ room, onSelect }: RoomCardProps) {
                 <p className="room-card__equipment">
                     {room.equipment.join(' · ')}
                 </p>
-                <button
+                <Link
                     className="room-card__button"
-                    type="button"
-                    onClick={() => onSelect(room)}
+                    to={`/rooms/${room.id}`}
                 >
                     Посмотреть расписание
-                </button>
+                </Link>
             </div>
         </article>
     )
