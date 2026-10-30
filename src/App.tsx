@@ -1,7 +1,7 @@
 import { getTodayInMoscow } from './utils/date'
 import './App.css'
 import { rooms } from './data/rooms'
-import RoomCard from './components/RoomCard'
+import { useSearchParams } from 'react-router'
 import { useState } from 'react'
 import Schedule from './components/Schedule'
 import type { Booking } from './data/bookings'
@@ -12,9 +12,30 @@ import BookingList from './components/BookingList'
 import RoomPage from './pages/RoomPage'
 import BookingDialog from './components/BookingDialog'
 import { Link, NavLink, Route, Routes } from 'react-router'
+import RoomsPage from './pages/RoomsPage'
 
 function App() {
-  const [minCapacity, setMinCapacity] = useState(0)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const capacityParam = Number(searchParams.get('capacity') ?? 0)
+
+  const minCapacity = [0, 2, 4, 6, 8, 10, 20].includes(capacityParam)
+    ? capacityParam
+    : 0
+
+  function handleCapacityChange(value: number) {
+    setSearchParams((currentParams) => {
+      const nextParams = new URLSearchParams(currentParams)
+
+      if (value === 0) {
+        nextParams.delete('capacity')
+      } else {
+        nextParams.set('capacity', String(value))
+      }
+
+      return nextParams
+    })
+  }
   const [selectedDate, setSelectedDate] = useState(getTodayInMoscow)
   const [bookingSelection, setBookingSelection] =
     useState<BookingSelection | null>(null)
@@ -57,9 +78,6 @@ function App() {
     setBookingSelection(null)
   }
 
-  const filteredRooms = rooms.filter(
-    (room) => room.capacity >= minCapacity
-  )
 
   function handleCancelBooking(bookingId: string) {
     const nextBookings = bookings.filter(
@@ -113,54 +131,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/rooms"
-          element={
-            <>
-              <section aria-labelledby="rooms-heading">
-                <h2 id="rooms-heading">Переговорные</h2>
-
-                <div className="rooms-filter">
-                  <label htmlFor="min-capacity">
-                    Количество участников
-                  </label>
-
-                  <select
-                    id="min-capacity"
-                    value={minCapacity}
-                    onChange={(event) =>
-                      setMinCapacity(Number(event.target.value))
-                    }
-                  >
-                    <option value={0}>Любое</option>
-                    <option value={2}>2</option>
-                    <option value={4}>4</option>
-                    <option value={6}>6</option>
-                    <option value={8}>8</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                  </select>
-                </div>
-
-                <div className="rooms-grid">
-                  {filteredRooms.map((room) => (
-                    <RoomCard
-                      key={room.id}
-                      room={room}
-                    />
-                  ))}
-                </div>
-
-                {filteredRooms.length === 0 && (
-                  <p role="status">
-                    Нет переговорных с такой вместимостью.
-                    Попробуй уменьшить количество участников.
-                  </p>
-                )}
-              </section>
-            </>
-          }
-        />
+        <Route path="/rooms" element={<RoomsPage />} />
 
         <Route
           path="/rooms/:roomId"
