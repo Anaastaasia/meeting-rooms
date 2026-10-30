@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { SubmitEvent } from 'react'
 import type { Booking } from '../data/bookings'
 import type { BookingSelection } from '../types/booking'
+import { hasBookingConflict } from '../utils/bookingConflicts'
 
 type BookingFormProps = {
     selection: BookingSelection
@@ -55,13 +56,13 @@ function BookingForm({
             return
         }
 
-        const hasConflict = bookings.some(
-            (booking) =>
-                booking.id !== bookingToEdit?.id &&
-                booking.roomId === selection.roomId &&
-                booking.date === selection.date &&
-                selection.startTime < booking.endTime &&
-                endTime > booking.startTime
+        const hasConflict = hasBookingConflict(
+            {
+                ...selection,
+                endTime,
+            },
+            bookings,
+            bookingToEdit?.id
         )
 
         if (hasConflict) {
