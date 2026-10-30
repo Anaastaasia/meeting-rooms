@@ -388,4 +388,38 @@
     flex-direction: column;
     align-items: flex-start;
   }
+}.booking-dialog {
+  box-sizing: border-box;
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 24px;
+  overflow-y: auto;
+  color: inherit;
+  background: #fff;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 25%);
+}
+
+.booking-dialog::backdrop {
+  background: rgb(0 0 0 / 45%);
+}
+
+.booking-dialog .booking-preview {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.booking-dialog .booking-form {
+  display: grid;
+  gap: 12px;
+}
+
+.booking-dialog .booking-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }

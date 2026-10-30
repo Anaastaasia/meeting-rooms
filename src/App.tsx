@@ -11,6 +11,7 @@ import { loadBookings, saveBookings } from './utils/bookingStorage'
 import BookingForm from './components/BookingForm'
 import BookingList from './components/BookingList'
 import RoomDetails from './components/RoomDetails'
+import BookingDialog from './components/BookingDialog'
 
 function App() {
   const [minCapacity, setMinCapacity] = useState(0)
@@ -88,23 +89,25 @@ function App() {
       />
 
       {bookingSelection && (
-        <BookingForm
-          key={`${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}-${bookingSelection.endTime}`}
-          selection={bookingSelection}
-          roomName={
-            rooms.find((room) => room.id === bookingSelection.roomId)?.name ??
-            'Неизвестная переговорная'
-          }
-          bookings={bookings}
-          onSave={(newBooking) => {
-            setBookings((currentBookings) => [
-              ...currentBookings,
-              newBooking,
-            ])
-            setBookingSelection(null)
-          }}
-          onClose={() => setBookingSelection(null)}
-        />
+        <BookingDialog onClose={() => setBookingSelection(null)}>
+          <BookingForm
+            key={`${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}-${bookingSelection.endTime}`}
+            selection={bookingSelection}
+            roomName={
+              rooms.find((room) => room.id === bookingSelection.roomId)?.name ??
+              'Неизвестная переговорная'
+            }
+            bookings={bookings}
+            onSave={(newBooking) => {
+              setBookings((currentBookings) => [
+                ...currentBookings,
+                newBooking,
+              ])
+              setBookingSelection(null)
+            }}
+            onClose={() => setBookingSelection(null)}
+          />
+        </BookingDialog>
       )}
 
       <BookingList

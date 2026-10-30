@@ -94,6 +94,7 @@ function BookingForm({
                 <input
                     id="booking-title"
                     type="text"
+                    autoFocus
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
                 />
