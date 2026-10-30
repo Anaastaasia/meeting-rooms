@@ -18,6 +18,7 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(getTodayInMoscow)
   const [bookingSelection, setBookingSelection] =
     useState<BookingSelection | null>(null)
+  const [bookingToEdit, setBookingToEdit] = useState<Booking | null>(null)
   const [storageError, setStorageError] = useState('')
 
   const [storageState] = useState(() => {
@@ -52,9 +53,36 @@ function App() {
     }
   }
 
-  function handleSaveBooking(newBooking: Booking) {
-    updateBookings([...bookings, newBooking])
+  function handleCloseBooking() {
     setBookingSelection(null)
+    setBookingToEdit(null)
+  }
+
+  function handleSelectSlot(selection: BookingSelection) {
+    setBookingToEdit(null)
+    setBookingSelection(selection)
+  }
+
+  function handleEditBooking(booking: Booking) {
+    setBookingToEdit(booking)
+
+    setBookingSelection({
+      roomId: booking.roomId,
+      date: booking.date,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+    })
+  }
+
+  function handleSaveBooking(savedBooking: Booking) {
+    const nextBookings = bookingToEdit
+      ? bookings.map((booking) =>
+        booking.id === bookingToEdit.id ? savedBooking : booking
+      )
+      : [...bookings, savedBooking]
+
+    updateBookings(nextBookings)
+    handleCloseBooking()
   }
 
 
@@ -105,7 +133,7 @@ function App() {
               bookings={bookings}
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
-              onSelectSlot={setBookingSelection}
+              onSelectSlot={handleSelectSlot}
             />
           }
         />
@@ -119,7 +147,7 @@ function App() {
               bookings={bookings}
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
-              onSelectSlot={setBookingSelection}
+              onSelectSlot={handleSelectSlot}
             />
           }
         />
@@ -130,6 +158,7 @@ function App() {
             <BookingList
               bookings={bookings}
               onCancel={handleCancelBooking}
+              onEdit={handleEditBooking}
             />
           }
         />
@@ -145,19 +174,19 @@ function App() {
           }
         />
       </Routes>
-
       {bookingSelection && (
-        <BookingDialog onClose={() => setBookingSelection(null)}>
+        <BookingDialog onClose={handleCloseBooking}>
           <BookingForm
-            key={`${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}-${bookingSelection.endTime}`}
+            key={`${bookingToEdit?.id ?? 'new'}-${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}-${bookingSelection.endTime}`}
             selection={bookingSelection}
+            bookingToEdit={bookingToEdit ?? undefined}
             roomName={
               rooms.find((room) => room.id === bookingSelection.roomId)?.name ??
               'Неизвестная переговорная'
             }
             bookings={bookings}
             onSave={handleSaveBooking}
-            onClose={() => setBookingSelection(null)}
+            onClose={handleCloseBooking}
           />
         </BookingDialog>
       )}

@@ -7,6 +7,7 @@ type BookingFormProps = {
     selection: BookingSelection
     roomName: string
     bookings: Booking[]
+    bookingToEdit?: Booking
     onSave: (booking: Booking) => void
     onClose: () => void
 }
@@ -15,10 +16,11 @@ function BookingForm({
     selection,
     roomName,
     bookings,
+    bookingToEdit,
     onSave,
     onClose,
 }: BookingFormProps) {
-    const [title, setTitle] = useState('')
+    const [title, setTitle] = useState(bookingToEdit?.title ?? '')
     const [endTime, setEndTime] = useState(selection.endTime)
     const [error, setError] = useState('')
 
@@ -49,12 +51,13 @@ function BookingForm({
         )
 
         if (startDateTime.getTime() <= Date.now()) {
-            setError('Нельзя забронировать прошедшее время.')
+            setError('Начало встречи уже наступило. Сохранить бронирование нельзя.')
             return
         }
 
         const hasConflict = bookings.some(
             (booking) =>
+                booking.id !== bookingToEdit?.id &&
                 booking.roomId === selection.roomId &&
                 booking.date === selection.date &&
                 selection.startTime < booking.endTime &&
@@ -67,7 +70,7 @@ function BookingForm({
         }
 
         const newBooking: Booking = {
-            id: crypto.randomUUID(),
+            id: bookingToEdit?.id ?? crypto.randomUUID(),
             roomId: selection.roomId,
             title: trimmedTitle,
             date: selection.date,
@@ -83,7 +86,9 @@ function BookingForm({
             className="booking-preview"
             aria-labelledby="booking-form-heading"
         >
-            <h2 id="booking-form-heading">Новое бронирование</h2>
+            <h2 id="booking-form-heading">
+                {bookingToEdit ? 'Редактирование бронирования' : 'Новое бронирование'}
+            </h2>
 
             <p>Переговорная: {roomName}</p>
             <p>Дата: {selection.date}</p>
@@ -113,7 +118,9 @@ function BookingForm({
                 {error && <p className="booking-form__error" role="alert">{error}</p>}
 
                 <div className="booking-form__actions">
-                    <button type="submit">Забронировать</button>
+                    <button type="submit">
+                        {bookingToEdit ? 'Сохранить изменения' : 'Забронировать'}
+                    </button>
                     <button type="button" onClick={onClose}>Закрыть</button>
                 </div>
             </form>

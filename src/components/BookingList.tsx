@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 
 type BookingListProps = {
     bookings: Booking[]
+    onEdit: (booking: Booking) => void
     onCancel: (bookingId: string) => void
 }
 
-function BookingList({ bookings, onCancel }: BookingListProps) {
+function BookingList({ bookings, onEdit, onCancel }: BookingListProps) {
     const [now, setNow] = useState(() => Date.now())
 
     useEffect(() => {
@@ -67,13 +68,23 @@ function BookingList({ bookings, onCancel }: BookingListProps) {
                                     </p>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() => onCancel(booking.id)}
-                                    aria-label={`Отменить бронирование «${booking.title}»`}
-                                >
-                                    Отменить
-                                </button>
+                                <div className="booking-list__actions">
+                                    <button
+                                        type="button"
+                                        onClick={() => onEdit(booking)}
+                                        aria-label={`Изменить бронирование «${booking.title}»`}
+                                    >
+                                        Изменить
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => onCancel(booking.id)}
+                                        aria-label={`Отменить бронирование «${booking.title}»`}
+                                    >
+                                        Отменить
+                                    </button>
+                                </div>
                             </li>
                         )
                     })}
