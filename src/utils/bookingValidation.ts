@@ -1,5 +1,6 @@
 import type { Booking } from '../data/bookings'
 import { rooms } from '../data/rooms'
+import { hasBookingConflict } from './bookingConflicts'
 
 function isValidDate(value: string): boolean {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -90,13 +91,7 @@ export function validateBookings(value: unknown): Booking[] {
             throw new Error('Найдены повторяющиеся ID бронирований.')
         }
 
-        const hasConflict = result.some(
-            (booking) =>
-                booking.roomId === item.roomId &&
-                booking.date === item.date &&
-                item.startTime < booking.endTime &&
-                item.endTime > booking.startTime
-        )
+        const hasConflict = hasBookingConflict(item, result)
 
         if (hasConflict) {
             throw new Error('Найдены пересекающиеся бронирования.')

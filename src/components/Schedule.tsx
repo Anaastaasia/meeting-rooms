@@ -7,6 +7,7 @@ import {
 import type { Booking } from '../data/bookings'
 import type { BookingSelection } from '../types/booking'
 import { useEffect, useId, useRef, useState } from 'react'
+import { hasBookingConflict } from '../utils/bookingConflicts'
 
 
 type ScheduleProps = {
@@ -150,13 +151,7 @@ function Schedule({
             return
         }
 
-        const hasConflict = bookings.some(
-            (booking) =>
-                booking.roomId === range.roomId &&
-                booking.date === range.date &&
-                range.startTime < booking.endTime &&
-                range.endTime > booking.startTime
-        )
+        const hasConflict = hasBookingConflict(range, bookings)
 
         if (hasConflict) {
             return
