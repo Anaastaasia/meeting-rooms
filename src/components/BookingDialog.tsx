@@ -3,10 +3,11 @@ import type { ReactNode } from 'react'
 
 type BookingDialogProps = {
     children: ReactNode
+    labelledBy: string
     onClose: () => void
 }
 
-function BookingDialog({ children, onClose }: BookingDialogProps) {
+function BookingDialog({ children, labelledBy, onClose }: BookingDialogProps) {
     const dialogRef = useRef<HTMLDialogElement | null>(null)
 
     useEffect(() => {
@@ -27,7 +28,7 @@ function BookingDialog({ children, onClose }: BookingDialogProps) {
         <dialog
             ref={dialogRef}
             className="booking-dialog"
-            aria-labelledby="booking-form-heading"
+            aria-labelledby={labelledBy}
             onCancel={(event) => {
                 event.preventDefault()
                 onClose()
