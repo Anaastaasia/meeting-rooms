@@ -70,6 +70,23 @@ function Schedule({
 }: ScheduleProps) {
     const headingId = useId()
     const dateInputId = useId()
+    const [now, setNow] = useState(() => Date.now())
+
+    useEffect(() => {
+        function updateNow() {
+            setNow(Date.now())
+        }
+
+        const intervalId = window.setInterval(updateNow, 15_000)
+
+        window.addEventListener('focus', updateNow)
+
+        return () => {
+            window.clearInterval(intervalId)
+            window.removeEventListener('focus', updateNow)
+        }
+    }, [])
+
     const [dragSelection, setDragSelection] =
         useState<DragSelection | null>(null)
 
@@ -81,7 +98,19 @@ function Schedule({
         setDragSelection(selection)
     }
 
-    function handleDragStart(roomId: string, time: string) {
+    function handleDragStart(
+        roomId: string,
+        time: string,
+        currentTimestamp: number
+    ) {
+        const startTime = new Date(
+            `${selectedDate}T${time}:00+03:00`
+        ).getTime()
+
+        if (startTime <= currentTimestamp) {
+            return
+        }
+
         updateDragSelection({
             roomId,
             date: selectedDate,
@@ -90,7 +119,11 @@ function Schedule({
         })
     }
 
-    function handleDragEnter(roomId: string, time: string) {
+    function handleDragEnter(
+        roomId: string,
+        time: string,
+        currentTimestamp: number
+    ) {
         const currentSelection = dragSelectionRef.current
 
         if (
@@ -107,6 +140,13 @@ function Schedule({
         }
 
         const range = getSelectionRange(nextSelection)
+        const rangeStart = new Date(
+            `${range.date}T${range.startTime}:00+03:00`
+        ).getTime()
+
+        if (rangeStart <= currentTimestamp) {
+            return
+        }
 
         const hasConflict = bookings.some(
             (booking) =>
@@ -276,6 +316,12 @@ function Schedule({
                                         )
                                     }
 
+                                    const slotStart = new Date(
+                                        `${selectedDate}T${time}:00+03:00`
+                                    ).getTime()
+
+                                    const isPast = slotStart <= now
+
                                     const isSelected =
                                         selectedRange !== null &&
                                         selectedRange.roomId === room.id &&
@@ -286,10 +332,19 @@ function Schedule({
                                         <td key={room.id} className="schedule__free-cell">
                                             <button
                                                 type="button"
-                                                className={`schedule__slot${isSelected ? ' schedule__slot--selected' : ''}`}
+                                                className={[
+                                                    'schedule__slot',
+                                                    isSelected ? 'schedule__slot--selected' : '',
+                                                    isPast ? 'schedule__slot--past' : '',
+                                                ].filter(Boolean).join(' ')}
+                                                disabled={isPast}
                                                 data-slot-room={room.id}
                                                 data-slot-time={time}
-                                                aria-label={`Выбрать ${room.name}, ${time}`}
+                                                aria-label={
+                                                    isPast
+                                                        ? `${room.name}, ${time}: время уже прошло`
+                                                        : `Выбрать ${room.name}, ${time}`
+                                                }
                                                 onMouseDown={(event) => {
                                                     if (event.button !== 0) {
                                                         return
@@ -297,9 +352,11 @@ function Schedule({
 
                                                     event.preventDefault()
                                                     event.currentTarget.focus()
-                                                    handleDragStart(room.id, time)
+                                                    handleDragStart(room.id, time, Date.now())
                                                 }}
-                                                onMouseEnter={() => handleDragEnter(room.id, time)}
+                                                onMouseEnter={() =>
+                                                    handleDragEnter(room.id, time, Date.now())
+                                                }
                                                 onClick={(event) => {
                                                     if (event.detail !== 0) {
                                                         return
@@ -313,7 +370,7 @@ function Schedule({
                                                     })
                                                 }}
                                             >
-                                                <span aria-hidden="true">+</span>
+                                                <span aria-hidden="true">{isPast ? '—' : '+'}</span>
                                             </button>
                                         </td>
                                     )

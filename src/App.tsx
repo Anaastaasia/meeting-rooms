@@ -2,7 +2,7 @@ import { getTodayInMoscow } from './utils/date'
 import './App.css'
 import { rooms } from './data/rooms'
 import RoomCard from './components/RoomCard'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Room } from './data/rooms'
 import Schedule from './components/Schedule'
 import type { Booking } from './data/bookings'
@@ -36,18 +36,27 @@ function App() {
   })
 
   const [bookings, setBookings] = useState<Booking[]>(storageState.bookings)
+  function updateBookings(nextBookings: Booking[]) {
+    setBookings(nextBookings)
 
-  useEffect(() => {
     if (!storageState.canSave) {
       return
     }
 
     try {
-      saveBookings(bookings)
+      saveBookings(nextBookings)
+      setStorageError('')
     } catch {
-      setStorageError('Не удалось сохранить бронирования в браузере.')
+      setStorageError(
+        'Изменения видны на странице, но не сохранены в браузере. После перезагрузки они могут потеряться.'
+      )
     }
-  }, [bookings, storageState.canSave])
+  }
+
+  function handleSaveBooking(newBooking: Booking) {
+    updateBookings([...bookings, newBooking])
+    setBookingSelection(null)
+  }
 
   const selectedRoom = rooms.find(
     (room) => room.id === selectedRoomId
@@ -60,9 +69,11 @@ function App() {
     setSelectedRoomId(room.id)
   }
   function handleCancelBooking(bookingId: string) {
-    setBookings((currentBookings) =>
-      currentBookings.filter((booking) => booking.id !== bookingId)
+    const nextBookings = bookings.filter(
+      (booking) => booking.id !== bookingId
     )
+
+    updateBookings(nextBookings)
   }
   return (
     <main className="app">
@@ -98,13 +109,7 @@ function App() {
               'Неизвестная переговорная'
             }
             bookings={bookings}
-            onSave={(newBooking) => {
-              setBookings((currentBookings) => [
-                ...currentBookings,
-                newBooking,
-              ])
-              setBookingSelection(null)
-            }}
+            onSave={handleSaveBooking}
             onClose={() => setBookingSelection(null)}
           />
         </BookingDialog>

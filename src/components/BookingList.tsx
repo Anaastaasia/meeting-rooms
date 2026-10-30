@@ -1,5 +1,6 @@
 import type { Booking } from '../data/bookings'
 import { rooms } from '../data/rooms'
+import { useEffect, useState } from 'react'
 
 type BookingListProps = {
     bookings: Booking[]
@@ -7,7 +8,22 @@ type BookingListProps = {
 }
 
 function BookingList({ bookings, onCancel }: BookingListProps) {
-    const now = Date.now()
+    const [now, setNow] = useState(() => Date.now())
+
+    useEffect(() => {
+        function updateNow() {
+            setNow(Date.now())
+        }
+
+        const intervalId = window.setInterval(updateNow, 15_000)
+
+        window.addEventListener('focus', updateNow)
+
+        return () => {
+            window.clearInterval(intervalId)
+            window.removeEventListener('focus', updateNow)
+        }
+    }, [])
 
     const upcomingBookings = bookings
         .filter((booking) => {

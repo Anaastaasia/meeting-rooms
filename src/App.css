@@ -438,4 +438,9 @@
 .room-gallery__controls button {
   min-width: 44px;
   min-height: 44px;
+}.schedule__slot.schedule__slot--past {
+  color: #6b7280;
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  box-shadow: none;
 }
