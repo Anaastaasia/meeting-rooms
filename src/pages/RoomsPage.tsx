@@ -2,6 +2,10 @@ import { useSearchParams } from 'react-router'
 import { rooms } from '../data/rooms'
 import RoomCard from '../components/RoomCard'
 
+const equipmentOptions = Array.from(
+    new Set(rooms.flatMap((room) => room.equipment))
+)
+
 function RoomsPage() {
     const [searchParams, setSearchParams] = useSearchParams()
 
@@ -10,6 +14,12 @@ function RoomsPage() {
     const minCapacity = [0, 2, 4, 6, 8, 10, 20].includes(capacityParam)
         ? capacityParam
         : 0
+
+    const equipmentParam = searchParams.get('equipment') ?? ''
+
+    const selectedEquipment = equipmentOptions.includes(equipmentParam)
+        ? equipmentParam
+        : ''
 
     function handleCapacityChange(value: number) {
         setSearchParams((currentParams) => {
@@ -25,9 +35,29 @@ function RoomsPage() {
         })
     }
 
-    const filteredRooms = rooms.filter(
-        (room) => room.capacity >= minCapacity
-    )
+    function handleEquipmentChange(value: string) {
+        setSearchParams((currentParams) => {
+            const nextParams = new URLSearchParams(currentParams)
+
+            if (value === '') {
+                nextParams.delete('equipment')
+            } else {
+                nextParams.set('equipment', value)
+            }
+
+            return nextParams
+        })
+    }
+
+    const filteredRooms = rooms.filter((room) => {
+        const matchesCapacity = room.capacity >= minCapacity
+
+        const matchesEquipment =
+            selectedEquipment === '' ||
+            room.equipment.includes(selectedEquipment)
+
+        return matchesCapacity && matchesEquipment
+    })
 
     return (
         <section aria-labelledby="rooms-heading">
@@ -53,6 +83,39 @@ function RoomsPage() {
                     <option value={10}>10</option>
                     <option value={20}>20</option>
                 </select>
+                <label htmlFor="room-equipment">Оборудование</label>
+
+                <select
+                    id="room-equipment"
+                    value={selectedEquipment}
+                    onChange={(event) =>
+                        handleEquipmentChange(event.target.value)
+                    }
+                >
+                    <option value="">Любое</option>
+
+                    {equipmentOptions.map((equipment) => (
+                        <option key={equipment} value={equipment}>
+                            {equipment}
+                        </option>
+                    ))}
+                </select>
+                <button
+                    type="button"
+                    disabled={minCapacity === 0 && selectedEquipment === ''}
+                    onClick={() => {
+                        setSearchParams((currentParams) => {
+                            const nextParams = new URLSearchParams(currentParams)
+
+                            nextParams.delete('capacity')
+                            nextParams.delete('equipment')
+
+                            return nextParams
+                        })
+                    }}
+                >
+                    Сбросить фильтры
+                </button>
             </div>
 
             <div className="rooms-grid">
@@ -63,8 +126,8 @@ function RoomsPage() {
 
             {filteredRooms.length === 0 && (
                 <p role="status">
-                    Нет переговорных с такой вместимостью.
-                    Попробуй уменьшить количество участников.
+                    Нет переговорных с такими параметрами.
+                    Измени или сбрось фильтры.
                 </p>
             )}
         </section>

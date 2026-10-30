@@ -1,7 +1,6 @@
 import { getTodayInMoscow } from './utils/date'
 import './App.css'
 import { rooms } from './data/rooms'
-import { useSearchParams } from 'react-router'
 import { useState } from 'react'
 import Schedule from './components/Schedule'
 import type { Booking } from './data/bookings'
@@ -15,27 +14,7 @@ import { Link, NavLink, Route, Routes } from 'react-router'
 import RoomsPage from './pages/RoomsPage'
 
 function App() {
-  const [searchParams, setSearchParams] = useSearchParams()
 
-  const capacityParam = Number(searchParams.get('capacity') ?? 0)
-
-  const minCapacity = [0, 2, 4, 6, 8, 10, 20].includes(capacityParam)
-    ? capacityParam
-    : 0
-
-  function handleCapacityChange(value: number) {
-    setSearchParams((currentParams) => {
-      const nextParams = new URLSearchParams(currentParams)
-
-      if (value === 0) {
-        nextParams.delete('capacity')
-      } else {
-        nextParams.set('capacity', String(value))
-      }
-
-      return nextParams
-    })
-  }
   const [selectedDate, setSelectedDate] = useState(getTodayInMoscow)
   const [bookingSelection, setBookingSelection] =
     useState<BookingSelection | null>(null)
