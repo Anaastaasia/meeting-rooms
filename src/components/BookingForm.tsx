@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { SubmitEvent } from 'react'
 import type { Booking } from '../data/bookings'
 import type { BookingSelection } from '../types/booking'
-import { addThirtyMinutes } from '../utils/date'
 
 type BookingFormProps = {
     selection: BookingSelection
@@ -20,9 +19,7 @@ function BookingForm({
     onClose,
 }: BookingFormProps) {
     const [title, setTitle] = useState('')
-    const [endTime, setEndTime] = useState(
-        addThirtyMinutes(selection.startTime)
-    )
+    const [endTime, setEndTime] = useState(selection.endTime)
     const [error, setError] = useState('')
 
     function handleSubmit(event: SubmitEvent<HTMLFormElement>) {

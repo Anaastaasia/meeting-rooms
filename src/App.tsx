@@ -88,7 +88,7 @@ function App() {
 
       {bookingSelection && (
         <BookingForm
-          key={`${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}`}
+          key={`${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}-${bookingSelection.endTime}`}
           selection={bookingSelection}
           roomName={
             rooms.find((room) => room.id === bookingSelection.roomId)?.name ??
