@@ -134,6 +134,7 @@ function App() {
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
               onSelectSlot={handleSelectSlot}
+              onEditBooking={handleEditBooking}
             />
           }
         />
@@ -148,6 +149,7 @@ function App() {
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
               onSelectSlot={handleSelectSlot}
+              onEditBooking={handleEditBooking}
             />
           }
         />

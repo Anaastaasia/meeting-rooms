@@ -10,6 +10,7 @@ type RoomDetailsProps = {
     selectedDate: string
     onDateChange: (date: string) => void
     onSelectSlot: (selection: BookingSelection) => void
+    onEditBooking: (booking: Booking) => void
 }
 
 function RoomDetails({
@@ -18,6 +19,7 @@ function RoomDetails({
     selectedDate,
     onDateChange,
     onSelectSlot,
+    onEditBooking,
 }: RoomDetailsProps) {
     return (
         <section
@@ -49,6 +51,7 @@ function RoomDetails({
                 selectedDate={selectedDate}
                 onDateChange={onDateChange}
                 onSelectSlot={onSelectSlot}
+                onEditBooking={onEditBooking}
             />
         </section>
     )

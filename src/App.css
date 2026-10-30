@@ -483,3 +483,32 @@ a.room-card__button:focus-visible {
   flex-wrap: wrap;
   gap: 8px;
 }
+.schedule__booking-button {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 8px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.schedule__booking-button:hover:not(:disabled) {
+  background-color: rgb(0 0 0 / 6%);
+}
+
+.schedule__booking-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+.schedule__booking-button:disabled {
+  opacity: 1;
+  cursor: default;
+}

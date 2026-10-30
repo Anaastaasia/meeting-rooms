@@ -15,6 +15,7 @@ type ScheduleProps = {
     selectedDate: string
     onDateChange: (date: string) => void
     onSelectSlot: (selection: BookingSelection) => void
+    onEditBooking: (booking: Booking) => void
 }
 type DragSelection = {
     roomId: string
@@ -67,6 +68,7 @@ function Schedule({
     selectedDate,
     onDateChange,
     onSelectSlot,
+    onEditBooking,
 }: ScheduleProps) {
     const headingId = useId()
     const dateInputId = useId()
@@ -302,16 +304,34 @@ function Schedule({
                                     }
 
                                     if (startingBooking) {
+                                        const bookingStart = new Date(
+                                            `${startingBooking.date}T${startingBooking.startTime}:00+03:00`
+                                        ).getTime()
+
+                                        const canEdit = bookingStart > now
+
                                         return (
                                             <td
                                                 key={room.id}
                                                 className="schedule__booking"
                                                 rowSpan={getBookingSlots(startingBooking)}
                                             >
-                                                <strong>{startingBooking.title}</strong>
-                                                <span>
-                                                    {startingBooking.startTime}–{startingBooking.endTime}
-                                                </span>
+                                                <button
+                                                    type="button"
+                                                    className="schedule__booking-button"
+                                                    disabled={!canEdit}
+                                                    onClick={() => onEditBooking(startingBooking)}
+                                                    aria-label={
+                                                        canEdit
+                                                            ? `Изменить встречу «${startingBooking.title}», ${startingBooking.startTime}–${startingBooking.endTime}`
+                                                            : `Встреча «${startingBooking.title}», ${startingBooking.startTime}–${startingBooking.endTime}. Редактирование недоступно`
+                                                    }
+                                                >
+                                                    <strong>{startingBooking.title}</strong>
+                                                    <span>
+                                                        {startingBooking.startTime}–{startingBooking.endTime}
+                                                    </span>
+                                                </button>
                                             </td>
                                         )
                                     }

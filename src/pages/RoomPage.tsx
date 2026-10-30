@@ -9,6 +9,7 @@ type RoomPageProps = {
     selectedDate: string
     onDateChange: (date: string) => void
     onSelectSlot: (selection: BookingSelection) => void
+    onEditBooking: (booking: Booking) => void
 }
 
 function RoomPage({
@@ -16,6 +17,7 @@ function RoomPage({
     selectedDate,
     onDateChange,
     onSelectSlot,
+    onEditBooking,
 }: RoomPageProps) {
     const { roomId } = useParams()
 
@@ -44,6 +46,7 @@ function RoomPage({
                 selectedDate={selectedDate}
                 onDateChange={onDateChange}
                 onSelectSlot={onSelectSlot}
+                onEditBooking={onEditBooking}
             />
         </>
     )
