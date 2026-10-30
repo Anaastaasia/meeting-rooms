@@ -258,10 +258,23 @@ function Schedule({
 
             <p className="schedule__hint">
                 Время указано по Москве, с 08:00 до 20:00.
+                Выбери свободную ячейку для бронирования.
+                Если все комнаты не помещаются, прокрути таблицу вбок.
             </p>
 
             <div className="schedule__scroll">
-                <table ref={tableRef} className="schedule__table">
+                <table
+                    ref={tableRef}
+                    className="schedule__table"
+                    style={{ minWidth: `${80 + rooms.length * 180}px` }}
+                >
+                    <colgroup>
+                        <col style={{ width: '80px' }} />
+
+                        {rooms.map((room) => (
+                            <col key={room.id} />
+                        ))}
+                    </colgroup>
                     <thead>
                         <tr>
                             <th className="schedule__time" scope="col">
@@ -315,6 +328,7 @@ function Schedule({
                                                 key={room.id}
                                                 className="schedule__booking"
                                                 rowSpan={getBookingSlots(startingBooking)}
+                                                style={{ height: `${getBookingSlots(startingBooking) * 64}px` }}
                                             >
                                                 <button
                                                     type="button"
