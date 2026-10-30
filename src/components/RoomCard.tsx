@@ -1,4 +1,4 @@
-import type { Room } from '../date/rooms'
+import type { Room } from '../data/rooms'
 
 type RoomCardProps = {
     room: Room

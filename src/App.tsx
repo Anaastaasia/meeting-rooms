@@ -10,6 +10,7 @@ import type { BookingSelection } from './types/booking'
 import { loadBookings, saveBookings } from './utils/bookingStorage'
 import BookingForm from './components/BookingForm'
 import BookingList from './components/BookingList'
+import RoomDetails from './components/RoomDetails'
 
 function App() {
   const [minCapacity, setMinCapacity] = useState(0)
@@ -150,26 +151,15 @@ function App() {
         )}
       </section>
       {selectedRoom && (
-        <section
-          className="room-details"
-          aria-labelledby="selected-room-heading"
-        >
-          <h2 id="selected-room-heading">
-            Расписание: {selectedRoom.name}
-          </h2>
-
-          <p>Вместимость: {selectedRoom.capacity} чел.</p>
-          <p>Время работы: 08:00–20:00, Москва.</p>
-          <p>Следующим шагом здесь добавим выбор даты и расписание.</p>
-
-          <button
-            className="room-details__close"
-            type="button"
-            onClick={() => setSelectedRoomId(null)}
-          >
-            Закрыть расписание
-          </button>
-        </section>
+        <RoomDetails
+          key={selectedRoom.id}
+          room={selectedRoom}
+          bookings={bookings}
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+          onSelectSlot={setBookingSelection}
+          onClose={() => setSelectedRoomId(null)}
+        />
       )}
     </main>
   )

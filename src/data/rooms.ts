@@ -35,7 +35,7 @@ export const rooms: Room[] = [
   {
     id: 'sibir',
     name: 'Сибирь',
-    capacity: 6,
+    capacity: 8,
     equipment: ['Проектор'],
     image: '/rooms/sibir.jpg',
     imageAlt: 'Переговорная Сибирь: стол, 8 стульев, проектор',

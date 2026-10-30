@@ -366,4 +366,26 @@
 .schedule__slot.schedule__slot--selected {
   background-color: #dbeafe;
   box-shadow: inset 0 0 0 2px #2563eb;
+}.room-details__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.room-details__image {
+  display: block;
+  width: 100%;
+  max-width: 720px;
+  max-height: 400px;
+  margin-top: 16px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+@media (max-width: 600px) {
+  .room-details__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

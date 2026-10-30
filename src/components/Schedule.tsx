@@ -6,7 +6,7 @@ import {
 } from '../utils/date'
 import type { Booking } from '../data/bookings'
 import type { BookingSelection } from '../types/booking'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 
 type ScheduleProps = {
@@ -68,6 +68,8 @@ function Schedule({
     onDateChange,
     onSelectSlot,
 }: ScheduleProps) {
+    const headingId = useId()
+    const dateInputId = useId()
     const [dragSelection, setDragSelection] =
         useState<DragSelection | null>(null)
 
@@ -172,8 +174,8 @@ function Schedule({
             ? getSelectionRange(dragSelection)
             : null
     return (
-        <section className="schedule" aria-labelledby="schedule-heading">
-            <h2 id="schedule-heading">Расписание переговорных</h2>
+        <section className="schedule" aria-labelledby={headingId}>
+            <h2 id={headingId}>Расписание переговорных</h2>
             <div className="schedule__date-controls">
                 <button
                     type="button"
@@ -183,10 +185,10 @@ function Schedule({
                     ←
                 </button>
 
-                <label htmlFor="schedule-date">Дата</label>
+                <label htmlFor={dateInputId}>Дата</label>
 
                 <input
-                    id="schedule-date"
+                    id={dateInputId}
                     type="date"
                     value={selectedDate}
                     onChange={(event) => {
