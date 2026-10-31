@@ -215,7 +215,6 @@ function Schedule({
         <section className="schedule" aria-labelledby={headingId}>
             <div className="schedule__header">
                 <h2 id={headingId}>Расписание</h2>
-                <p className="schedule__office">Москва · 08:00–20:00</p>
             </div>
 
             <div className="schedule__toolbar">

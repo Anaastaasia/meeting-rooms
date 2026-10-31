@@ -44,6 +44,8 @@ function Sidebar() {
                 </NavLink>
             </nav>
 
+
+
             <div className="sidebar__footer">
                 <p>Больше пространства<br />для важных встреч</p>
 

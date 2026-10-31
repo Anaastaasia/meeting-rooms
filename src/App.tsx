@@ -13,9 +13,15 @@ import BookingDialog from './components/BookingDialog'
 import { Link, Route, Routes } from 'react-router'
 import RoomsPage from './pages/RoomsPage'
 import Sidebar from './components/Sidebar'
+import { useAuth } from './contexts/useAuth'
+import { useNavigate } from 'react-router'
+import AccountControls from './components/AccountControls'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 
 function App() {
-
+  const { user, isLoading } = useAuth()
+  const navigate = useNavigate()
   const [selectedDate, setSelectedDate] = useState(getTodayInMoscow)
   const [bookingSelection, setBookingSelection] =
     useState<BookingSelection | null>(null)
@@ -60,12 +66,27 @@ function App() {
     setBookingToEdit(null)
   }
 
+
   function handleSelectSlot(selection: BookingSelection) {
+    if (isLoading) return
+
+    if (!user) {
+      navigate('/login')
+      return
+    }
+
     setBookingToEdit(null)
     setBookingSelection(selection)
   }
 
+
   function handleEditBooking(booking: Booking) {
+    if (isLoading) return
+
+    if (!user) {
+      navigate('/login')
+      return
+    }
     setBookingToEdit(booking)
 
     setBookingSelection({
@@ -100,6 +121,9 @@ function App() {
       <Sidebar />
 
       <main className="app" id="main-content">
+        <div className="app__topbar">
+          <AccountControls />
+        </div>
         <h1 className="visually-hidden">
           Место — бронирование переговорных
         </h1>
@@ -186,4 +210,14 @@ function App() {
   )
 }
 
-export default App
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/*" element={<App />} />
+    </Routes>
+  )
+}
+
+export default AppRoutes
