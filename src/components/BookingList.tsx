@@ -5,10 +5,9 @@ import { useEffect, useState } from 'react'
 type BookingListProps = {
     bookings: Booking[]
     onEdit: (booking: Booking) => void
-    onCancel: (bookingId: string) => void
 }
 
-function BookingList({ bookings, onEdit, onCancel }: BookingListProps) {
+function BookingList({ bookings, onEdit }: BookingListProps) {
     const [now, setNow] = useState(() => Date.now())
 
     useEffect(() => {
@@ -58,33 +57,37 @@ function BookingList({ bookings, onEdit, onCancel }: BookingListProps) {
                         )
 
                         return (
-                            <li className="booking-list__item" key={booking.id}>
-                                <div>
-                                    <h3>{booking.title}</h3>
-                                    <p>{room?.name ?? 'Неизвестная переговорная'}</p>
-                                    <p>
-                                        {booking.date} · {booking.startTime}–
-                                        {booking.endTime} · Москва
-                                    </p>
-                                </div>
+                            <li
+                                className="booking-list__item"
+                                key={booking.id}
+                                data-room={booking.roomId}
+                            >
+                                <button
+                                    className="booking-list__open"
+                                    type="button"
+                                    onClick={() => onEdit(booking)}
+                                    aria-label={`Открыть бронирование «${booking.title}», ${booking.date}, ${booking.startTime}–${booking.endTime}`}
+                                >
+                                    <span className="booking-list__info">
+                                        <strong className="booking-list__title">
+                                            {booking.title}
+                                        </strong>
 
-                                <div className="booking-list__actions">
-                                    <button
-                                        type="button"
-                                        onClick={() => onEdit(booking)}
-                                        aria-label={`Изменить бронирование «${booking.title}»`}
-                                    >
-                                        Изменить
-                                    </button>
+                                        <span className="booking-list__room">
+                                            <span className="room-dot" aria-hidden="true" />
+                                            {room?.name ?? 'Неизвестная переговорная'}
+                                        </span>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => onCancel(booking.id)}
-                                        aria-label={`Отменить бронирование «${booking.title}»`}
-                                    >
-                                        Отменить
-                                    </button>
-                                </div>
+                                        <span className="booking-list__time">
+                                            {booking.date} · {booking.startTime}–
+                                            {booking.endTime} · Москва
+                                        </span>
+                                    </span>
+
+                                    <span className="booking-list__open-label" aria-hidden="true">
+                                        Открыть →
+                                    </span>
+                                </button>
                             </li>
                         )
                     })}

@@ -212,9 +212,14 @@ function Schedule({
             : null
     return (
         <section className="schedule" aria-labelledby={headingId}>
-            <h2 id={headingId}>Расписание переговорных</h2>
-            <div className="schedule__date-controls">
+            <div className="schedule__header">
+                <h2 id={headingId}>Расписание</h2>
+                <p className="schedule__office">Москва · 08:00–20:00</p>
+            </div>
+
+            <div className="schedule__toolbar">
                 <button
+                    className="schedule__arrow"
                     type="button"
                     onClick={() => onDateChange(addDays(selectedDate, -1))}
                     aria-label="Предыдущий день"
@@ -222,20 +227,25 @@ function Schedule({
                     ←
                 </button>
 
-                <label htmlFor={dateInputId}>Дата</label>
+                <div className="schedule__date-field">
+                    <label className="visually-hidden" htmlFor={dateInputId}>
+                        Дата расписания
+                    </label>
 
-                <input
-                    id={dateInputId}
-                    type="date"
-                    value={selectedDate}
-                    onChange={(event) => {
-                        if (event.target.value) {
-                            onDateChange(event.target.value)
-                        }
-                    }}
-                />
+                    <input
+                        id={dateInputId}
+                        type="date"
+                        value={selectedDate}
+                        onChange={(event) => {
+                            if (event.target.value) {
+                                onDateChange(event.target.value)
+                            }
+                        }}
+                    />
+                </div>
 
                 <button
+                    className="schedule__arrow"
                     type="button"
                     onClick={() => onDateChange(addDays(selectedDate, 1))}
                     aria-label="Следующий день"
@@ -244,18 +254,13 @@ function Schedule({
                 </button>
 
                 <button
+                    className="schedule__today"
                     type="button"
                     onClick={() => onDateChange(getTodayInMoscow())}
                 >
                     Сегодня
                 </button>
             </div>
-
-            <p className="schedule__hint">
-                Время указано по Москве, с 08:00 до 20:00.
-                Выбери свободную ячейку для бронирования.
-                Если все комнаты не помещаются, прокрути таблицу вбок.
-            </p>
 
             <div className="schedule__scroll">
                 <table
@@ -277,8 +282,20 @@ function Schedule({
                             </th>
 
                             {rooms.map((room) => (
-                                <th key={room.id} scope="col">
-                                    {room.name}
+                                <th key={room.id} scope="col" data-room={room.id}>
+                                    <div className="schedule__room-heading">
+                                        <span className="room-dot" aria-hidden="true" />
+
+                                        <div>
+                                            <span className="schedule__room-name">
+                                                {room.name}
+                                            </span>
+
+                                            <span className="schedule__room-capacity">
+                                                До {room.capacity} человек
+                                            </span>
+                                        </div>
+                                    </div>
                                 </th>
                             ))}
                         </tr>
@@ -309,6 +326,7 @@ function Schedule({
 
                                     if (continuingBooking) {
                                         return null
+
                                     }
 
                                     if (startingBooking) {
@@ -322,6 +340,7 @@ function Schedule({
                                             <td
                                                 key={room.id}
                                                 className="schedule__booking"
+                                                data-room={room.id}
                                                 rowSpan={getBookingSlots(startingBooking)}
                                                 style={{ height: `${getBookingSlots(startingBooking) * 64}px` }}
                                             >

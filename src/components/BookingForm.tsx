@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { SubmitEvent } from 'react'
 import type { Booking } from '../data/bookings'
 import type { BookingSelection } from '../types/booking'
@@ -10,6 +10,7 @@ type BookingFormProps = {
     bookings: Booking[]
     bookingToEdit?: Booking
     onSave: (booking: Booking) => void
+    onCancelBooking: (bookingId: string) => void
     onClose: () => void
 }
 
@@ -19,11 +20,24 @@ function BookingForm({
     bookings,
     bookingToEdit,
     onSave,
+    onCancelBooking,
     onClose,
 }: BookingFormProps) {
     const [title, setTitle] = useState(bookingToEdit?.title ?? '')
     const [endTime, setEndTime] = useState(selection.endTime)
     const [error, setError] = useState('')
+    const [isConfirmingCancel, setIsConfirmingCancel] = useState(false)
+
+    const titleRef = useRef<HTMLInputElement | null>(null)
+    const returnButtonRef = useRef<HTMLButtonElement | null>(null)
+
+    useEffect(() => {
+        if (isConfirmingCancel) {
+            returnButtonRef.current?.focus()
+        } else {
+            titleRef.current?.focus()
+        }
+    }, [isConfirmingCancel])
 
     function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -70,7 +84,7 @@ function BookingForm({
             return
         }
 
-        const newBooking: Booking = {
+        const savedBooking: Booking = {
             id: bookingToEdit?.id ?? crypto.randomUUID(),
             roomId: selection.roomId,
             title: trimmedTitle,
@@ -79,7 +93,47 @@ function BookingForm({
             endTime,
         }
 
-        onSave(newBooking)
+        onSave(savedBooking)
+    }
+
+    if (isConfirmingCancel && bookingToEdit) {
+        return (
+            <section className="booking-preview">
+                <h2 id="booking-form-heading">Отменить бронирование?</h2>
+
+                <div className="booking-summary">
+                    <strong>{bookingToEdit.title}</strong>
+                    <p>{roomName}</p>
+                    <p>
+                        {bookingToEdit.date} · {bookingToEdit.startTime}–
+                        {bookingToEdit.endTime} · Москва
+                    </p>
+                </div>
+
+                <p className="booking-cancel-note">
+                    Встреча будет удалена, а время освободится.
+                    Несохранённые изменения будут потеряны.
+                </p>
+
+                <div className="booking-form__actions">
+                    <button
+                        ref={returnButtonRef}
+                        type="button"
+                        onClick={() => setIsConfirmingCancel(false)}
+                    >
+                        Вернуться к редактированию
+                    </button>
+
+                    <button
+                        className="button--danger"
+                        type="button"
+                        onClick={() => onCancelBooking(bookingToEdit.id)}
+                    >
+                        Отменить бронирование
+                    </button>
+                </div>
+            </section>
+        )
     }
 
     return (
@@ -88,16 +142,20 @@ function BookingForm({
             aria-labelledby="booking-form-heading"
         >
             <h2 id="booking-form-heading">
-                {bookingToEdit ? 'Редактирование бронирования' : 'Новое бронирование'}
+                {bookingToEdit ? 'Бронирование' : 'Новое бронирование'}
             </h2>
 
-            <p>Переговорная: {roomName}</p>
-            <p>Дата: {selection.date}</p>
-            <p>Начало: {selection.startTime}</p>
+            <div className="booking-summary">
+                <strong>{roomName}</strong>
+                <p>{selection.date} · Москва</p>
+                <p>Начало в {selection.startTime}</p>
+            </div>
 
             <form className="booking-form" onSubmit={handleSubmit}>
                 <label htmlFor="booking-title">Название встречи</label>
+
                 <input
+                    ref={titleRef}
                     id="booking-title"
                     type="text"
                     autoFocus
@@ -106,6 +164,7 @@ function BookingForm({
                 />
 
                 <label htmlFor="booking-end-time">Окончание</label>
+
                 <input
                     id="booking-end-time"
                     type="time"
@@ -116,15 +175,34 @@ function BookingForm({
                     onChange={(event) => setEndTime(event.target.value)}
                 />
 
-                {error && <p className="booking-form__error" role="alert">{error}</p>}
+                {error && (
+                    <p className="booking-form__error" role="alert">
+                        {error}
+                    </p>
+                )}
 
                 <div className="booking-form__actions">
                     <button type="submit">
                         {bookingToEdit ? 'Сохранить изменения' : 'Забронировать'}
                     </button>
-                    <button type="button" onClick={onClose}>Закрыть</button>
+
+                    <button type="button" onClick={onClose}>
+                        Закрыть
+                    </button>
                 </div>
             </form>
+
+            {bookingToEdit && (
+                <div className="booking-cancel-section">
+                    <button
+                        className="button--danger-text"
+                        type="button"
+                        onClick={() => setIsConfirmingCancel(true)}
+                    >
+                        Отменить бронирование
+                    </button>
+                </div>
+            )}
         </section>
     )
 }
