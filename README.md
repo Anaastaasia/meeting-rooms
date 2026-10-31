@@ -1,75 +1,126 @@
-# React + TypeScript + Vite
+# Место — бронирование переговорных
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Веб-приложение для просмотра переговорных и планирования встреч. Позволяет выбрать свободное время в календаре, создать бронирование, изменить его или отменить.
 
-Currently, two official plugins are available:
+Первая версия работает без сервера: бронирования сохраняются в текущем браузере через localStorage.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Возможности
 
-## React Compiler
+### Расписание
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Просмотр расписания всех переговорных на выбранную дату.
+- Переключение между днями и возврат к сегодняшней дате по Москве.
+- Создание бронирования нажатием на свободную ячейку.
+- Выбор интервала протягиванием мыши в обоих направлениях.
+- Цветовое обозначение переговорных.
+- Переход на страницу комнаты из шапки календаря.
 
-## Expanding the ESLint configuration
+### Бронирования
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Создание встречи с названием и временем окончания.
+- Редактирование названия и окончания встречи.
+- Отмена бронирования с подтверждением.
+- Список предстоящих бронирований.
+- Сохранение изменений после перезагрузки страницы.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Переговорные
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Каталог с фотографиями, вместимостью и оборудованием.
+- Фильтрация по минимальной вместимости и оборудованию.
+- Сохранение фильтров в параметрах адреса.
+- Отдельная страница каждой комнаты с фотогалереей и расписанием.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Интерфейс
 
+- Адаптивная вёрстка для компьютеров и телефонов.
+- Навигация между страницами без полной перезагрузки.
+- Модальные окна с управлением с клавиатуры.
+- Закреплённые заголовки и колонка времени в календаре.
+
+## Правила бронирования
+
+- Время работы: 08:00–20:00 по Москве.
+- Шаг расписания: 30 минут.
+- Встреча должна завершаться в день начала.
+- Название не может быть пустым.
+- Окончание должно быть позже начала.
+- Нельзя сохранять встречу, начало которой уже наступило.
+- Бронирования одной комнаты не должны пересекаться.
+- Соседние интервалы разрешены: например, 10:00–11:00 и 11:00–12:00.
+
+При редактировании проверка пересечений исключает саму изменяемую встречу.
+
+## Стек
+
+- React
+- TypeScript
+- React Router
+- Vite
+- CSS
+- Vitest
+- ESLint
+- GitHub Actions
+
+## Запуск локально
+
+Для воспроизводимого окружения можно использовать Node.js 24 — эта версия применяется в автоматических проверках проекта.
+
+```bash
+git clone https://github.com/Anaastaasia/meeting-rooms.git
+cd meeting-rooms
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Открой адрес, который Vite выведет в терминале.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Команды
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Команда | Назначение |
+| --- | --- |
+| `npm run dev` | Запуск сервера разработки |
+| `npm run test` | Запуск тестов |
+| `npm run lint` | Проверка кода ESLint |
+| `npm run build` | Проверка TypeScript и production-сборка |
+| `npm run preview` | Локальный просмотр готовой сборки |
 
+Результат сборки создаётся в папке `dist`.
+
+## Проверки
+
+Логика пересечений бронирований покрыта модульными тестами: проверяются пересечения интервалов, соседние встречи, разные комнаты и исключение редактируемой записи.
+
+GitHub Actions запускает тесты, ESLint и сборку согласно настройкам workflow.
+
+## Структура проекта
+
+```text
+src/
+├── components/   # Календарь, карточки, формы и модальные окна
+├── data/         # Переговорные и демонстрационные бронирования
+├── pages/        # Страницы каталога и отдельной переговорной
+├── types/        # Общие типы
+├── utils/        # Даты, хранение, валидация и пересечения
+├── App.tsx       # Маршруты и общее состояние приложения
+├── App.css       # Стили интерфейса
+└── index.css     # Базовые стили
 ```
+
+## Хранение данных и ограничения
+
+- Данные хранятся локально под ключом `meeting-room-bookings`.
+- Разные браузеры и устройства имеют независимые расписания.
+- Очистка данных сайта удалит сохранённые пользователем бронирования.
+- При загрузке сохранённые данные проходят проверку.
+- Ошибки чтения и записи отображаются в интерфейсе.
+- Авторизации, серверной базы и разграничения прав в первой версии нет.
+- Протягивание интервала реализовано для мыши; отдельная поддержка сенсорного жеста пока не предусмотрена.
+
+Это демонстрационная версия, а не общее расписание для реального офиса.
+
+## Дальнейшее развитие
+
+- Общая база бронирований.
+- Авторизация пользователей.
+- Изменение и отмена только собственных встреч.
+- Серверная защита от пересечений и одновременного бронирования.

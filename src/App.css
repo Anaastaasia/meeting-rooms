@@ -126,15 +126,37 @@
 
 .rooms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
 }
 
 .room-card {
-  overflow: hidden;
-  border: 1px solid var(--color-border);
+  display: flex;
+  min-width: 0;
   border-radius: var(--radius-card);
   background: var(--color-surface);
+}
+
+.room-card__link {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: inherit;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: border-color 150ms ease;
+}
+
+.room-card__link:hover {
+  border-color: var(--room-accent);
+}
+
+.room-card__link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
 }
 
 .room-card__image {
@@ -145,53 +167,117 @@
 }
 
 .room-card__content {
-  padding: 20px;
+  flex: 1;
+  padding: 16px;
 }
 
-.room-card h3 {
-  margin-bottom: 8px;
-  font-size: 22px;
+.room-card__heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-card__heading h3 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 20px;
+  font-weight: 600;
   line-height: 1.3;
 }
 
-.room-card__equipment {
-  margin-top: 8px;
+.room-card__arrow {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--color-muted);
+  font-size: 20px;
+}
+
+.room-card__link:hover .room-card__arrow {
+  color: var(--color-primary);
+}
+
+.room-card__capacity {
+  margin-top: 6px;
   color: var(--color-muted);
   font-size: 14px;
 }
 
-.room-card__button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  margin-top: 20px;
-  padding: 10px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  color: var(--color-primary);
-  background: var(--color-surface);
-  font-weight: 600;
-  text-decoration: none;
+.room-card__equipment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0;
+  margin: 14px 0 0;
+  list-style: none;
 }
 
-.room-card__button:hover {
-  background: var(--color-soft);
+.room-card__equipment li {
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: var(--color-muted);
+  background: #f2f4ef;
+  font-size: 12px;
+  line-height: 1.4;
 }
+
+/* Фильтры переговорных */
 
 .rooms-filter {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-end;
+  gap: 16px;
   margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
 }
 
-.rooms-filter label {
-  font-size: 14px;
+.rooms-filter__field {
+  display: flex;
+  flex: 0 1 240px;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rooms-filter__field label {
+  color: var(--color-muted);
+  font-size: 13px;
   font-weight: 600;
 }
 
+.rooms-filter__field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  cursor: pointer;
+}
+
+.rooms-filter__field select:hover {
+  border-color: var(--color-primary);
+}
+
+.rooms-filter__reset {
+  flex-shrink: 0;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 10px 16px;
+  color: var(--color-muted);
+  background: transparent;
+}
+
+.rooms-filter__reset:hover:not(:disabled) {
+  color: var(--color-primary);
+  background: var(--color-soft);
+}
 /* Подробности комнаты */
 
 .room-details {
@@ -414,10 +500,20 @@
 .schedule__room-name {
   display: block;
   overflow: hidden;
+  border-radius: 3px;
+  color: var(--color-text);
   font-size: 16px;
   font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.schedule__room-name:hover {
+  color: var(--color-primary);
+  text-decoration-color: currentColor;
 }
 
 .schedule__room-capacity {
@@ -735,13 +831,56 @@
   font-size: 14px;
   font-weight: 600;
 }
+/* Вся шапка переговорной — ссылка */
+
+.schedule__table thead th[data-room] {
+  padding: 0;
+}
+
+.schedule__room-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 80px;
+  padding: 16px;
+  color: var(--color-text);
+  text-align: left;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.schedule__room-info {
+  min-width: 0;
+}
+
+.schedule__room-link:hover {
+  background-color: var(--room-bg);
+}
+
+.schedule__room-link:hover .schedule__room-name {
+  color: var(--color-primary);
+}
+
+.schedule__room-link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -3px;
+}
 
 /* Планшет и телефон */
 
-@media (max-width: 900px) {
-  .app-shell {
-    grid-template-columns: minmax(0, 1fr);
+@media (max-width: 1200px) {
+  .rooms-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+@media (max-width: 900px) {
+.app-shell {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+}
+
 
   .sidebar {
     position: static;
@@ -779,8 +918,13 @@
   }
 
   .app {
+    align-self: start;
     padding: 24px;
   }
+
+  .rooms-grid {
+  gap: 16px;
+}
 }
 
 @media (max-width: 600px) {
@@ -788,19 +932,28 @@
     padding: 24px 12px;
   }
 
-  .app-nav {
-    gap: 4px;
-  }
+.app-nav {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 8px 8px 12px;
+}
 
-  .app-nav a {
-    gap: 5px;
-    font-size: 12px;
-  }
+.app-nav a {
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 64px;
+  padding: 8px 2px;
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+}
 
-  .app-nav svg {
-    width: 17px;
-    height: 17px;
-  }
+.app-nav svg {
+  width: 18px;
+  height: 18px;
+}
 
   .schedule__header {
   flex-direction: column;
@@ -823,16 +976,6 @@
   margin-left: 0;
 }
 
-  .rooms-filter {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
-  }
-
-  .rooms-filter select,
-  .rooms-filter button {
-    width: 100%;
-  }
 
   .rooms-grid {
     grid-template-columns: minmax(0, 1fr);

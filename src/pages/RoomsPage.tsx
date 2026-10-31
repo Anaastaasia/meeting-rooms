@@ -64,43 +64,52 @@ function RoomsPage() {
             <h2 id="rooms-heading">Переговорные</h2>
 
             <div className="rooms-filter">
-                <label htmlFor="min-capacity">
-                    Количество участников
-                </label>
+                <div className="rooms-filter__field">
+                    <label htmlFor="min-capacity">
+                        Количество участников
+                    </label>
 
-                <select
-                    id="min-capacity"
-                    value={minCapacity}
-                    onChange={(event) =>
-                        handleCapacityChange(Number(event.target.value))
-                    }
-                >
-                    <option value={0}>Любое</option>
-                    <option value={2}>2</option>
-                    <option value={4}>4</option>
-                    <option value={6}>6</option>
-                    <option value={8}>8</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                </select>
-                <label htmlFor="room-equipment">Оборудование</label>
+                    <select
+                        id="min-capacity"
+                        value={minCapacity}
+                        onChange={(event) =>
+                            handleCapacityChange(Number(event.target.value))
+                        }
+                    >
+                        <option value={0}>Любое</option>
+                        <option value={2}>От 2 человек</option>
+                        <option value={4}>От 4 человек</option>
+                        <option value={6}>От 6 человек</option>
+                        <option value={8}>От 8 человек</option>
+                        <option value={10}>От 10 человек</option>
+                        <option value={20}>От 20 человек</option>
+                    </select>
+                </div>
 
-                <select
-                    id="room-equipment"
-                    value={selectedEquipment}
-                    onChange={(event) =>
-                        handleEquipmentChange(event.target.value)
-                    }
-                >
-                    <option value="">Любое</option>
+                <div className="rooms-filter__field">
+                    <label htmlFor="room-equipment">
+                        Оборудование
+                    </label>
 
-                    {equipmentOptions.map((equipment) => (
-                        <option key={equipment} value={equipment}>
-                            {equipment}
-                        </option>
-                    ))}
-                </select>
+                    <select
+                        id="room-equipment"
+                        value={selectedEquipment}
+                        onChange={(event) =>
+                            handleEquipmentChange(event.target.value)
+                        }
+                    >
+                        <option value="">Любое</option>
+
+                        {equipmentOptions.map((equipment) => (
+                            <option key={equipment} value={equipment}>
+                                {equipment}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
                 <button
+                    className="rooms-filter__reset"
                     type="button"
                     disabled={minCapacity === 0 && selectedEquipment === ''}
                     onClick={() => {

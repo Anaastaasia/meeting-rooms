@@ -8,6 +8,7 @@ import type { Booking } from '../data/bookings'
 import type { BookingSelection } from '../types/booking'
 import { useEffect, useId, useRef, useState } from 'react'
 import { hasBookingConflict } from '../utils/bookingConflicts'
+import { Link } from 'react-router'
 
 
 type ScheduleProps = {
@@ -283,10 +284,14 @@ function Schedule({
 
                             {rooms.map((room) => (
                                 <th key={room.id} scope="col" data-room={room.id}>
-                                    <div className="schedule__room-heading">
+                                    <Link
+                                        className="schedule__room-link"
+                                        to={`/rooms/${room.id}`}
+                                        aria-label={`Открыть переговорную «${room.name}»`}
+                                    >
                                         <span className="room-dot" aria-hidden="true" />
 
-                                        <div>
+                                        <span className="schedule__room-info">
                                             <span className="schedule__room-name">
                                                 {room.name}
                                             </span>
@@ -294,8 +299,8 @@ function Schedule({
                                             <span className="schedule__room-capacity">
                                                 До {room.capacity} человек
                                             </span>
-                                        </div>
-                                    </div>
+                                        </span>
+                                    </Link>
                                 </th>
                             ))}
                         </tr>
