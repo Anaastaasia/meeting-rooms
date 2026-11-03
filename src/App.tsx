@@ -1,7 +1,7 @@
 import { getTodayInMoscow } from './utils/date'
 import './App.css'
 import { rooms } from './data/rooms'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Schedule from './components/Schedule'
 import type { Booking } from './data/bookings'
 import type { BookingSelection } from './types/booking'
@@ -28,24 +28,40 @@ function App() {
     useState<BookingSelection | null>(null)
   const [bookingToEdit, setBookingToEdit] = useState<Booking | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
+  const bookingsRequestId = useRef(0)
   const [bookingsLoading, setBookingsLoading] = useState(true)
   const [bookingsError, setBookingsError] = useState('')
   const [isSavingBooking, setIsSavingBooking] = useState(false)
   const [bookingSaveError, setBookingSaveError] = useState('')
 
+  async function refreshBookings(): Promise<void> {
+    const requestId = ++bookingsRequestId.current
+
+    const updatedBookings = await fetchBookings()
+
+    if (requestId === bookingsRequestId.current) {
+      setBookings(updatedBookings)
+    }
+  }
+
+
   useEffect(() => {
     let isActive = true
 
     async function loadServerBookings() {
+      const requestId = ++bookingsRequestId.current
+
       try {
         const data = await fetchBookings()
 
-        if (isActive) {
+        if (isActive && requestId === bookingsRequestId.current) {
           setBookings(data)
           setBookingsError('')
         }
-      } catch {
-        if (isActive) {
+      } catch (error) {
+        if (isActive && requestId === bookingsRequestId.current) {
+          console.error('Ошибка загрузки бронирований:', error)
+
           setBookingsError(
             'Не удалось загрузить бронирования. Попробуй обновить страницу.'
           )
@@ -65,6 +81,7 @@ function App() {
   }, [])
 
 
+
   useEffect(() => {
     const channel = supabase
       .channel('bookings-changes')
@@ -77,8 +94,7 @@ function App() {
         },
         async () => {
           try {
-            const updatedBookings = await fetchBookings()
-            setBookings(updatedBookings)
+            await refreshBookings()
           } catch (error) {
             console.error(
               'Ошибка обновления бронирований через Realtime:',
@@ -87,7 +103,20 @@ function App() {
           }
         }
       )
-      .subscribe()
+
+
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          void refreshBookings().catch((error) => {
+            console.error(
+              'Ошибка синхронизации после подключения Realtime:',
+              error
+            )
+          })
+        }
+      })
+
+
 
     return () => {
       void supabase.removeChannel(channel)
@@ -146,7 +175,6 @@ function App() {
   async function handleSaveBooking(savedBooking: Booking): Promise<void> {
     if (!user || isSavingBooking) return
 
-    console.time('Полное время сохранения')
 
     if (bookingToEdit && bookingToEdit.userId !== user.id) {
       setBookingSaveError('Редактировать можно только свои бронирования.')
@@ -161,6 +189,7 @@ function App() {
     try {
       if (bookingToEdit) {
         await updateBooking(savedBooking, user.id)
+        bookingsRequestId.current += 1
 
         setBookings((current) =>
           current.map((booking) =>
@@ -172,19 +201,26 @@ function App() {
       } else {
         await createBooking(savedBooking, user.id)
 
+        bookingsRequestId.current += 1
+
         setBookings((current) => [
           ...current,
           { ...savedBooking, userId: user.id },
         ])
       }
 
-      handleCloseBooking()
-    }
 
-    finally {
-      console.timeEnd('Полное время сохранения')
+      handleCloseBooking()
+    } catch (error) {
+      console.error('Ошибка сохранения бронирования:', error)
+
+      setBookingSaveError(
+        'Не удалось сохранить бронирование. Возможно, выбранное время уже занято или сервер недоступен.'
+      )
+    } finally {
       setIsSavingBooking(false)
     }
+
   }
 
 
@@ -205,6 +241,8 @@ function App() {
 
     try {
       await deleteBooking(bookingId, user.id)
+
+      bookingsRequestId.current += 1
 
       setBookings((current) =>
         current.filter((item) => item.id !== bookingId)
