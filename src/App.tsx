@@ -34,6 +34,7 @@ function App() {
   const [isSavingBooking, setIsSavingBooking] = useState(false)
   const [bookingSaveError, setBookingSaveError] = useState('')
 
+
   async function refreshBookings(): Promise<void> {
     const requestId = ++bookingsRequestId.current
 
@@ -264,6 +265,7 @@ function App() {
 
   return (
     <div className="app-shell">
+
       <Sidebar />
 
       <main className="app" id="main-content">
