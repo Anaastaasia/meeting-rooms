@@ -1,11 +1,10 @@
 import { getTodayInMoscow } from './utils/date'
 import './App.css'
 import { rooms } from './data/rooms'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Schedule from './components/Schedule'
 import type { Booking } from './data/bookings'
 import type { BookingSelection } from './types/booking'
-import { loadBookings, saveBookings } from './utils/bookingStorage'
 import BookingForm from './components/BookingForm'
 import BookingList from './components/BookingList'
 import RoomPage from './pages/RoomPage'
@@ -18,6 +17,7 @@ import { useNavigate } from 'react-router'
 import AccountControls from './components/AccountControls'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import { createBooking, fetchBookings, updateBooking, deleteBooking } from './lib/bookingApi'
 
 function App() {
   const { user, isLoading } = useAuth()
@@ -26,40 +26,43 @@ function App() {
   const [bookingSelection, setBookingSelection] =
     useState<BookingSelection | null>(null)
   const [bookingToEdit, setBookingToEdit] = useState<Booking | null>(null)
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [bookingsLoading, setBookingsLoading] = useState(true)
+  const [bookingsError, setBookingsError] = useState('')
+  const [isSavingBooking, setIsSavingBooking] = useState(false)
+  const [bookingSaveError, setBookingSaveError] = useState('')
 
-  const [storageError, setStorageError] = useState('')
+  useEffect(() => {
+    let isActive = true
 
-  const [storageState] = useState(() => {
-    try {
-      return {
-        bookings: loadBookings(),
-        canSave: true,
+    async function loadServerBookings() {
+      try {
+        const data = await fetchBookings()
+
+        if (isActive) {
+          setBookings(data)
+          setBookingsError('')
+        }
+      } catch {
+        if (isActive) {
+          setBookingsError(
+            'Не удалось загрузить бронирования. Попробуй обновить страницу.'
+          )
+        }
+      } finally {
+        if (isActive) {
+          setBookingsLoading(false)
+        }
       }
-    } catch {
-      return {
-        bookings: [] as Booking[],
-        canSave: false,
-      }
-    }
-  })
-
-  const [bookings, setBookings] = useState<Booking[]>(storageState.bookings)
-  function updateBookings(nextBookings: Booking[]) {
-    setBookings(nextBookings)
-
-    if (!storageState.canSave) {
-      return
     }
 
-    try {
-      saveBookings(nextBookings)
-      setStorageError('')
-    } catch {
-      setStorageError(
-        'Изменения видны на странице, но не сохранены в браузере. После перезагрузки они могут потеряться.'
-      )
+    void loadServerBookings()
+
+    return () => {
+      isActive = false
     }
-  }
+  }, [])
+
 
   function handleCloseBooking() {
     setBookingSelection(null)
@@ -68,25 +71,33 @@ function App() {
 
 
   function handleSelectSlot(selection: BookingSelection) {
-    if (isLoading) return
+    if (isLoading || isSavingBooking) return
 
     if (!user) {
       navigate('/login')
       return
     }
 
+    setBookingSaveError('')
     setBookingToEdit(null)
     setBookingSelection(selection)
   }
 
 
   function handleEditBooking(booking: Booking) {
-    if (isLoading) return
+    if (isLoading || isSavingBooking) return
 
     if (!user) {
       navigate('/login')
       return
     }
+
+    if (booking.userId !== user.id) {
+      window.alert('Редактировать можно только свои бронирования.')
+      return
+    }
+
+    setBookingSaveError('')
     setBookingToEdit(booking)
 
     setBookingSelection({
@@ -96,25 +107,86 @@ function App() {
       endTime: booking.endTime,
     })
   }
-  function handleSaveBooking(savedBooking: Booking) {
-    const nextBookings = bookingToEdit
-      ? bookings.map((booking) =>
-        booking.id === bookingToEdit.id ? savedBooking : booking
+
+
+
+
+  async function handleSaveBooking(savedBooking: Booking): Promise<void> {
+    if (!user || isSavingBooking) return
+
+    console.time('Полное время сохранения')
+
+    if (bookingToEdit && bookingToEdit.userId !== user.id) {
+      setBookingSaveError('Редактировать можно только свои бронирования.')
+      return
+    }
+
+    setIsSavingBooking(true)
+    setBookingSaveError('')
+
+
+    try {
+      console.time('Сохранение в Supabase')
+
+      if (bookingToEdit) {
+        await updateBooking(savedBooking, user.id)
+      } else {
+        await createBooking(savedBooking, user.id)
+      }
+
+      console.timeEnd('Сохранение в Supabase')
+
+      console.time('Повторная загрузка бронирований')
+
+      const updatedBookings = await fetchBookings()
+
+      console.timeEnd('Повторная загрузка бронирований')
+
+      setBookings(updatedBookings)
+      handleCloseBooking()
+    }
+    finally {
+      console.timeEnd('Полное время сохранения')
+      setIsSavingBooking(false)
+    }
+  }
+
+
+
+
+  async function handleCancelBooking(bookingId: string): Promise<void> {
+    if (!user || isSavingBooking) return
+
+    const booking = bookings.find((item) => item.id === bookingId)
+
+    if (!booking || booking.userId !== user.id) {
+      setBookingSaveError('Отменять можно только свои бронирования.')
+      return
+    }
+
+    setIsSavingBooking(true)
+    setBookingSaveError('')
+
+    try {
+      await deleteBooking(bookingId, user.id)
+
+      setBookings((current) =>
+        current.filter((item) => item.id !== bookingId)
       )
-      : [...bookings, savedBooking]
 
-    updateBookings(nextBookings)
-    handleCloseBooking()
+      handleCloseBooking()
+    } catch (error) {
+      console.error('Ошибка отмены бронирования:', error)
+
+      setBookingSaveError(
+        'Не удалось отменить бронирование. Попробуй ещё раз.'
+      )
+    } finally {
+      setIsSavingBooking(false)
+    }
   }
 
-  function handleCancelBooking(bookingId: string) {
-    const nextBookings = bookings.filter(
-      (booking) => booking.id !== bookingId
-    )
 
-    updateBookings(nextBookings)
-    handleCloseBooking()
-  }
 
   return (
     <div className="app-shell">
@@ -127,14 +199,15 @@ function App() {
         <h1 className="visually-hidden">
           Место — бронирование переговорных
         </h1>
-        {!storageState.canSave && (
-          <p role="alert">
-            Не удалось прочитать сохранённые бронирования. Новые записи
-            пока не будут сохраняться в браузере.
-          </p>
+
+        {bookingsLoading && (
+          <p role="status">Загружаем бронирования...</p>
         )}
 
-        {storageError && <p role="alert">{storageError}</p>}
+        {bookingsError && (
+          <p role="alert">{bookingsError}</p>
+        )}
+
 
 
         <Routes>
@@ -189,8 +262,11 @@ function App() {
           />
         </Routes>
         {bookingSelection && (
-          <BookingDialog onClose={handleCloseBooking} labelledBy="booking-form-heading">
+          <BookingDialog onClose={handleCloseBooking}
+            labelledBy="booking-form-heading">
             <BookingForm
+              isSaving={isSavingBooking}
+              saveError={bookingSaveError}
               key={`${bookingToEdit?.id ?? 'new'}-${bookingSelection.roomId}-${bookingSelection.date}-${bookingSelection.startTime}-${bookingSelection.endTime}`}
               selection={bookingSelection}
               bookingToEdit={bookingToEdit ?? undefined}

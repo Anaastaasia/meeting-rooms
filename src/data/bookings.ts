@@ -7,6 +7,7 @@ export type Booking = {
     date: string
     startTime: string
     endTime: string
+    userId?: string
 }
 
 const today = getTodayInMoscow()

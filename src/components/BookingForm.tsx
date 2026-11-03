@@ -12,6 +12,8 @@ type BookingFormProps = {
     onSave: (booking: Booking) => void
     onCancelBooking: (bookingId: string) => void
     onClose: () => void
+    isSaving: boolean
+    saveError: string
 }
 
 function BookingForm({
@@ -22,6 +24,8 @@ function BookingForm({
     onSave,
     onCancelBooking,
     onClose,
+    isSaving,
+    saveError,
 }: BookingFormProps) {
     const [title, setTitle] = useState(bookingToEdit?.title ?? '')
     const [endTime, setEndTime] = useState(selection.endTime)
@@ -41,6 +45,8 @@ function BookingForm({
 
     function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
+
+        if (isSaving) return
 
         const trimmedTitle = title.trim()
 
@@ -115,6 +121,12 @@ function BookingForm({
                     Несохранённые изменения будут потеряны.
                 </p>
 
+                {saveError && (
+                    <p className="booking-form__error" role="alert">
+                        {saveError}
+                    </p>
+                )}
+
                 <div className="booking-form__actions">
                     <button
                         ref={returnButtonRef}
@@ -124,13 +136,16 @@ function BookingForm({
                         Вернуться к редактированию
                     </button>
 
+
                     <button
                         className="button--danger"
                         type="button"
+                        disabled={isSaving}
                         onClick={() => onCancelBooking(bookingToEdit.id)}
                     >
-                        Отменить бронирование
+                        {isSaving ? 'Отменяем...' : 'Отменить бронирование'}
                     </button>
+
                 </div>
             </section>
         )
@@ -180,10 +195,19 @@ function BookingForm({
                         {error}
                     </p>
                 )}
+                {saveError && (
+                    <p className="booking-form__error" role="alert">
+                        {saveError}
+                    </p>
+                )}
 
                 <div className="booking-form__actions">
-                    <button type="submit">
-                        {bookingToEdit ? 'Сохранить изменения' : 'Забронировать'}
+                    <button type="submit" disabled={isSaving}>
+                        {isSaving
+                            ? 'Сохраняем...'
+                            : bookingToEdit
+                                ? 'Сохранить изменения'
+                                : 'Забронировать'}
                     </button>
 
                     <button type="button" onClick={onClose}>
