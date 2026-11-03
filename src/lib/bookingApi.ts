@@ -26,17 +26,10 @@ function mapBooking(row: BookingRow): Booking {
 
 
 
-export async function fetchBookings(): Promise<Booking[]> {
-    const {
-        data: { user },
-        error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError && authError.name !== 'AuthSessionMissingError') {
-        throw authError
-    }
-
-    if (user) {
+export async function fetchBookings(
+    isAuthenticated: boolean
+): Promise<Booking[]> {
+    if (isAuthenticated) {
         const { data, error } = await supabase
             .from('bookings')
             .select('id, room_id, user_id, title, date, start_time, end_time')

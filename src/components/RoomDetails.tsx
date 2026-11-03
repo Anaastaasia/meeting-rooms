@@ -8,6 +8,8 @@ type RoomDetailsProps = {
     room: Room
     bookings: Booking[]
     selectedDate: string
+    isLoading: boolean
+    isUnavailable: boolean
     onDateChange: (date: string) => void
     onSelectSlot: (selection: BookingSelection) => void
     onEditBooking: (booking: Booking) => void
@@ -17,6 +19,8 @@ function RoomDetails({
     room,
     bookings,
     selectedDate,
+    isLoading,
+    isUnavailable,
     onDateChange,
     onSelectSlot,
     onEditBooking,
@@ -49,6 +53,8 @@ function RoomDetails({
                 rooms={[room]}
                 bookings={bookings}
                 selectedDate={selectedDate}
+                isLoading={isLoading}
+                isUnavailable={isUnavailable}
                 onDateChange={onDateChange}
                 onSelectSlot={onSelectSlot}
                 onEditBooking={onEditBooking}

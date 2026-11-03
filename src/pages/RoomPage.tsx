@@ -7,6 +7,8 @@ import RoomDetails from '../components/RoomDetails'
 type RoomPageProps = {
     bookings: Booking[]
     selectedDate: string
+    isLoading: boolean
+    isUnavailable: boolean
     onDateChange: (date: string) => void
     onSelectSlot: (selection: BookingSelection) => void
     onEditBooking: (booking: Booking) => void
@@ -15,6 +17,8 @@ type RoomPageProps = {
 function RoomPage({
     bookings,
     selectedDate,
+    isLoading,
+    isUnavailable,
     onDateChange,
     onSelectSlot,
     onEditBooking,
@@ -44,6 +48,8 @@ function RoomPage({
                 room={room}
                 bookings={bookings}
                 selectedDate={selectedDate}
+                isLoading={isLoading}
+                isUnavailable={isUnavailable}
                 onDateChange={onDateChange}
                 onSelectSlot={onSelectSlot}
                 onEditBooking={onEditBooking}

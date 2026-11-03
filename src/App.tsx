@@ -1,7 +1,7 @@
 import { getTodayInMoscow } from './utils/date'
 import './App.css'
 import { rooms } from './data/rooms'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Schedule from './components/Schedule'
 import type { Booking } from './data/bookings'
 import type { BookingSelection } from './types/booking'
@@ -22,38 +22,73 @@ import { supabase } from './lib/supabase'
 
 function App() {
   const { user, isLoading } = useAuth()
+  const isAuthenticated = Boolean(user)
   const navigate = useNavigate()
-  const [selectedDate, setSelectedDate] = useState(getTodayInMoscow)
+  const [selectedDate, setSelectedDate] = useState(() => {
+    return sessionStorage.getItem('selectedDate') || getTodayInMoscow()
+  })
   const [bookingSelection, setBookingSelection] =
     useState<BookingSelection | null>(null)
   const [bookingToEdit, setBookingToEdit] = useState<Booking | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
   const bookingsRequestId = useRef(0)
   const [bookingsLoading, setBookingsLoading] = useState(true)
+  const [bookingsRetrying, setBookingsRetrying] = useState(false)
   const [bookingsError, setBookingsError] = useState('')
+  const isScheduleUnavailable = bookingsLoading || Boolean(bookingsError)
   const [isSavingBooking, setIsSavingBooking] = useState(false)
   const [bookingSaveError, setBookingSaveError] = useState('')
 
+  useEffect(() => {
+    sessionStorage.setItem('selectedDate', selectedDate)
+  }, [selectedDate])
 
-  async function refreshBookings(): Promise<void> {
+  const refreshBookings = useCallback(async (): Promise<void> => {
     const requestId = ++bookingsRequestId.current
 
-    const updatedBookings = await fetchBookings()
+    try {
+      const updatedBookings = await fetchBookings(isAuthenticated)
 
-    if (requestId === bookingsRequestId.current) {
-      setBookings(updatedBookings)
+      if (requestId === bookingsRequestId.current) {
+        setBookings(updatedBookings)
+        setBookingsError('')
+      }
+    } catch (error) {
+      if (requestId === bookingsRequestId.current) {
+        console.error('Ошибка обновления бронирований:', error)
+
+        setBookingsError(
+          'Не удалось загрузить бронирования. Попробуй повторить загрузку.'
+        )
+      }
+    }
+  }, [isAuthenticated])
+
+  async function retryBookings(): Promise<void> {
+    if (bookingsRetrying) return
+
+    setBookingsRetrying(true)
+
+    try {
+      await refreshBookings()
+    } finally {
+      setBookingsRetrying(false)
     }
   }
 
 
   useEffect(() => {
+    if (isLoading) return
+
     let isActive = true
 
     async function loadServerBookings() {
+      setBookingsLoading(true)
+      setBookingsError('')
       const requestId = ++bookingsRequestId.current
 
       try {
-        const data = await fetchBookings()
+        const data = await fetchBookings(isAuthenticated)
 
         if (isActive && requestId === bookingsRequestId.current) {
           setBookings(data)
@@ -78,12 +113,14 @@ function App() {
 
     return () => {
       isActive = false
+      bookingsRequestId.current += 1
     }
-  }, [])
+  }, [isLoading, isAuthenticated, user?.id])
 
 
 
   useEffect(() => {
+    if (isLoading) return
     const channel = supabase
       .channel('bookings-changes')
       .on(
@@ -122,7 +159,7 @@ function App() {
     return () => {
       void supabase.removeChannel(channel)
     }
-  }, [])
+  }, [refreshBookings, isLoading])
 
 
 
@@ -276,12 +313,19 @@ function App() {
           Место — бронирование переговорных
         </h1>
 
-        {bookingsLoading && (
-          <p role="status">Загружаем бронирования...</p>
-        )}
 
         {bookingsError && (
-          <p role="alert">{bookingsError}</p>
+          <div className="bookings-error" role="alert">
+            <span>{bookingsError}</span>
+
+            <button
+              type="button"
+              disabled={bookingsRetrying}
+              onClick={() => void retryBookings()}
+            >
+              {bookingsRetrying ? 'Загружаем…' : 'Повторить загрузку'}
+            </button>
+          </div>
         )}
 
 
@@ -294,6 +338,8 @@ function App() {
                 rooms={rooms}
                 bookings={bookings}
                 selectedDate={selectedDate}
+                isLoading={bookingsLoading}
+                isUnavailable={isScheduleUnavailable}
                 onDateChange={setSelectedDate}
                 onSelectSlot={handleSelectSlot}
                 onEditBooking={handleEditBooking}
@@ -309,6 +355,8 @@ function App() {
               <RoomPage
                 bookings={bookings}
                 selectedDate={selectedDate}
+                isLoading={bookingsLoading}
+                isUnavailable={isScheduleUnavailable}
                 onDateChange={setSelectedDate}
                 onSelectSlot={handleSelectSlot}
                 onEditBooking={handleEditBooking}

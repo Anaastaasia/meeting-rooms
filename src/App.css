@@ -927,6 +927,117 @@
   text-align: right;
 }
 
+/* Индикатор загрузки расписания */
+
+.schedule__loading {
+  position: sticky;
+  top: 65px;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  font-size: 13px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.schedule__spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid #cbd5e1;
+  border-top-color: #475569;
+  border-radius: 50%;
+  animation: schedule-spin 0.8s linear infinite;
+}
+
+.schedule__wrapper {
+  position: relative;
+  min-width: 0;
+}
+
+.schedule__loading {
+  position: absolute;
+  top: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 9px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+
+  color: #64748b;
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Ошибка загрузки бронирований */
+
+.bookings-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  padding: 12px 16px;
+  margin-bottom: 16px;
+
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-card);
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.bookings-error button {
+  padding: 8px 12px;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #991b1b;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.bookings-error button:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+.bookings-error button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@keyframes schedule-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .schedule__spinner {
+    animation: none;
+  }
+}
+
 @media (max-width: 600px) {
   .app__topbar {
     margin-bottom: 16px;

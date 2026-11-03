@@ -14,7 +14,9 @@ import { Link } from 'react-router'
 type ScheduleProps = {
     rooms: Room[]
     bookings: Booking[]
+    isLoading: boolean
     selectedDate: string
+    isUnavailable: boolean
     onDateChange: (date: string) => void
     onSelectSlot: (selection: BookingSelection) => void
     onEditBooking: (booking: Booking) => void
@@ -67,6 +69,8 @@ function getBookingSlots(booking: Booking): number {
 function Schedule({
     rooms,
     bookings,
+    isLoading,
+    isUnavailable,
     selectedDate,
     onDateChange,
     onSelectSlot,
@@ -96,6 +100,51 @@ function Schedule({
 
     const dragSelectionRef = useRef<DragSelection | null>(null)
     const tableRef = useRef<HTMLTableElement | null>(null)
+    const scrollRef = useRef<HTMLDivElement | null>(null)
+
+    useEffect(() => {
+        const container = scrollRef.current
+
+        if (!container) return
+
+        if (selectedDate !== getTodayInMoscow()) {
+            container.scrollTop = 0
+            return
+        }
+
+        const moscowTime = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Europe/Moscow',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+        }).format(new Date())
+
+        const [hours, minutes] = moscowTime.split(':').map(Number)
+        const currentMinutes = hours * 60 + minutes
+
+        const nextSlot = timeSlots.find((time) => {
+            const [slotHours, slotMinutes] = time.split(':').map(Number)
+            return slotHours * 60 + slotMinutes > currentMinutes
+        })
+
+        if (!nextSlot) {
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth',
+            })
+            return
+        }
+
+        const rowIndex = timeSlots.indexOf(nextSlot)
+        const row = tableRef.current?.tBodies[0]?.rows[rowIndex]
+
+        if (!row) return
+
+        container.scrollTo({
+            top: row.offsetTop - 64,
+            behavior: 'smooth',
+        })
+    }, [selectedDate])
 
     function updateDragSelection(selection: DragSelection | null) {
         dragSelectionRef.current = selection
@@ -107,6 +156,7 @@ function Schedule({
         time: string,
         currentTimestamp: number
     ) {
+        if (isUnavailable) return
         const startTime = new Date(
             `${selectedDate}T${time}:00+03:00`
         ).getTime()
@@ -128,6 +178,7 @@ function Schedule({
         time: string,
         currentTimestamp: number
     ) {
+        if (isUnavailable) return
         const currentSelection = dragSelectionRef.current
 
         if (
@@ -262,175 +313,192 @@ function Schedule({
                 </button>
             </div>
 
-            <div className="schedule__scroll">
-                <table
-                    ref={tableRef}
-                    className="schedule__table"
-                    style={{ minWidth: `${80 + rooms.length * 180}px` }}
-                >
-                    <colgroup>
-                        <col style={{ width: '80px' }} />
 
-                        {rooms.map((room) => (
-                            <col key={room.id} />
-                        ))}
-                    </colgroup>
-                    <thead>
-                        <tr>
-                            <th className="schedule__time" scope="col">
-                                Время
-                            </th>
+
+            <div className="schedule__wrapper">
+                {isLoading && (
+                    <div className="schedule__loading" role="status">
+                        <span className="schedule__spinner" aria-hidden="true" />
+                        <span>Загружаем бронирования…</span>
+                    </div>
+                )}
+
+                <div className="schedule__scroll" ref={scrollRef}>
+                    {isLoading && (
+                        <div className="schedule__loading" role="status">
+                            <span className="schedule__spinner" aria-hidden="true" />
+                            <span>Загружаем бронирования…</span>
+                        </div>
+                    )}
+                    <table
+                        ref={tableRef}
+                        className="schedule__table"
+                        style={{ minWidth: `${80 + rooms.length * 180}px` }}
+                    >
+                        <colgroup>
+                            <col style={{ width: '80px' }} />
 
                             {rooms.map((room) => (
-                                <th key={room.id} scope="col" data-room={room.id}>
-                                    <Link
-                                        className="schedule__room-link"
-                                        to={`/rooms/${room.id}`}
-                                        aria-label={`Открыть переговорную «${room.name}»`}
-                                    >
-                                        <span className="room-dot" aria-hidden="true" />
-
-                                        <span className="schedule__room-info">
-                                            <span className="schedule__room-name">
-                                                {room.name}
-                                            </span>
-
-                                            <span className="schedule__room-capacity">
-                                                До {room.capacity} человек
-                                            </span>
-                                        </span>
-                                    </Link>
-                                </th>
+                                <col key={room.id} />
                             ))}
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {timeSlots.map((time) => (
-                            <tr key={time}>
-                                <th className="schedule__time" scope="row">
-                                    {time}
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th className="schedule__time" scope="col">
+                                    Время
                                 </th>
-                                {rooms.map((room) => {
-                                    const roomBookings = bookings.filter(
-                                        (booking) =>
-                                            booking.roomId === room.id &&
-                                            booking.date === selectedDate
-                                    )
 
-                                    const startingBooking = roomBookings.find(
-                                        (booking) => booking.startTime === time
-                                    )
+                                {rooms.map((room) => (
+                                    <th key={room.id} scope="col" data-room={room.id}>
+                                        <Link
+                                            className="schedule__room-link"
+                                            to={`/rooms/${room.id}`}
+                                            aria-label={`Открыть переговорную «${room.name}»`}
+                                        >
+                                            <span className="room-dot" aria-hidden="true" />
 
-                                    const continuingBooking = roomBookings.find(
-                                        (booking) =>
-                                            booking.startTime < time &&
-                                            time < booking.endTime
-                                    )
+                                            <span className="schedule__room-info">
+                                                <span className="schedule__room-name">
+                                                    {room.name}
+                                                </span>
 
-                                    if (continuingBooking) {
-                                        return null
+                                                <span className="schedule__room-capacity">
+                                                    До {room.capacity} человек
+                                                </span>
+                                            </span>
+                                        </Link>
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
 
-                                    }
+                        <tbody>
+                            {timeSlots.map((time) => (
+                                <tr key={time}>
+                                    <th className="schedule__time" scope="row">
+                                        {time}
+                                    </th>
+                                    {rooms.map((room) => {
+                                        const roomBookings = bookings.filter(
+                                            (booking) =>
+                                                booking.roomId === room.id &&
+                                                booking.date === selectedDate
+                                        )
 
-                                    if (startingBooking) {
-                                        const bookingStart = new Date(
-                                            `${startingBooking.date}T${startingBooking.startTime}:00+03:00`
+                                        const startingBooking = roomBookings.find(
+                                            (booking) => booking.startTime === time
+                                        )
+
+                                        const continuingBooking = roomBookings.find(
+                                            (booking) =>
+                                                booking.startTime < time &&
+                                                time < booking.endTime
+                                        )
+
+                                        if (continuingBooking) {
+                                            return null
+
+                                        }
+
+                                        if (startingBooking) {
+                                            const bookingStart = new Date(
+                                                `${startingBooking.date}T${startingBooking.startTime}:00+03:00`
+                                            ).getTime()
+
+                                            const canEdit = bookingStart > now
+
+                                            return (
+                                                <td
+                                                    key={room.id}
+                                                    className="schedule__booking"
+                                                    data-room={room.id}
+                                                    rowSpan={getBookingSlots(startingBooking)}
+                                                    style={{ height: `${getBookingSlots(startingBooking) * 64}px` }}
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        className="schedule__booking-button"
+                                                        disabled={!canEdit}
+                                                        onClick={() => onEditBooking(startingBooking)}
+                                                        aria-label={
+                                                            canEdit
+                                                                ? `Изменить встречу «${startingBooking.title}», ${startingBooking.startTime}–${startingBooking.endTime}`
+                                                                : `Встреча «${startingBooking.title}», ${startingBooking.startTime}–${startingBooking.endTime}. Редактирование недоступно`
+                                                        }
+                                                    >
+                                                        <strong>{startingBooking.title}</strong>
+                                                        <span>
+                                                            {startingBooking.startTime}–{startingBooking.endTime}
+                                                        </span>
+                                                    </button>
+                                                </td>
+                                            )
+                                        }
+
+                                        const slotStart = new Date(
+                                            `${selectedDate}T${time}:00+03:00`
                                         ).getTime()
 
-                                        const canEdit = bookingStart > now
+                                        const isPast = slotStart <= now
+
+                                        const isSelected =
+                                            selectedRange !== null &&
+                                            selectedRange.roomId === room.id &&
+                                            time >= selectedRange.startTime &&
+                                            time < selectedRange.endTime
 
                                         return (
-                                            <td
-                                                key={room.id}
-                                                className="schedule__booking"
-                                                data-room={room.id}
-                                                rowSpan={getBookingSlots(startingBooking)}
-                                                style={{ height: `${getBookingSlots(startingBooking) * 64}px` }}
-                                            >
+                                            <td key={room.id} className="schedule__free-cell">
                                                 <button
                                                     type="button"
-                                                    className="schedule__booking-button"
-                                                    disabled={!canEdit}
-                                                    onClick={() => onEditBooking(startingBooking)}
+                                                    className={[
+                                                        'schedule__slot',
+                                                        isSelected ? 'schedule__slot--selected' : '',
+                                                        isPast ? 'schedule__slot--past' : '',
+                                                    ].filter(Boolean).join(' ')}
+                                                    disabled={isPast || isUnavailable}
+                                                    data-slot-room={room.id}
+                                                    data-slot-time={time}
                                                     aria-label={
-                                                        canEdit
-                                                            ? `Изменить встречу «${startingBooking.title}», ${startingBooking.startTime}–${startingBooking.endTime}`
-                                                            : `Встреча «${startingBooking.title}», ${startingBooking.startTime}–${startingBooking.endTime}. Редактирование недоступно`
+                                                        isPast
+                                                            ? `${room.name}, ${time}: время уже прошло`
+                                                            : `Выбрать ${room.name}, ${time}`
                                                     }
+                                                    onMouseDown={(event) => {
+                                                        if (event.button !== 0) {
+                                                            return
+                                                        }
+
+                                                        event.preventDefault()
+                                                        event.currentTarget.focus()
+                                                        handleDragStart(room.id, time, Date.now())
+                                                    }}
+                                                    onMouseEnter={() =>
+                                                        handleDragEnter(room.id, time, Date.now())
+                                                    }
+                                                    onClick={(event) => {
+                                                        if (isUnavailable || event.detail !== 0) {
+                                                            return
+                                                        }
+
+                                                        onSelectSlot({
+                                                            roomId: room.id,
+                                                            date: selectedDate,
+                                                            startTime: time,
+                                                            endTime: addThirtyMinutes(time),
+                                                        })
+                                                    }}
                                                 >
-                                                    <strong>{startingBooking.title}</strong>
-                                                    <span>
-                                                        {startingBooking.startTime}–{startingBooking.endTime}
-                                                    </span>
+                                                    <span aria-hidden="true">{isPast ? '—' : '+'}</span>
                                                 </button>
                                             </td>
                                         )
-                                    }
-
-                                    const slotStart = new Date(
-                                        `${selectedDate}T${time}:00+03:00`
-                                    ).getTime()
-
-                                    const isPast = slotStart <= now
-
-                                    const isSelected =
-                                        selectedRange !== null &&
-                                        selectedRange.roomId === room.id &&
-                                        time >= selectedRange.startTime &&
-                                        time < selectedRange.endTime
-
-                                    return (
-                                        <td key={room.id} className="schedule__free-cell">
-                                            <button
-                                                type="button"
-                                                className={[
-                                                    'schedule__slot',
-                                                    isSelected ? 'schedule__slot--selected' : '',
-                                                    isPast ? 'schedule__slot--past' : '',
-                                                ].filter(Boolean).join(' ')}
-                                                disabled={isPast}
-                                                data-slot-room={room.id}
-                                                data-slot-time={time}
-                                                aria-label={
-                                                    isPast
-                                                        ? `${room.name}, ${time}: время уже прошло`
-                                                        : `Выбрать ${room.name}, ${time}`
-                                                }
-                                                onMouseDown={(event) => {
-                                                    if (event.button !== 0) {
-                                                        return
-                                                    }
-
-                                                    event.preventDefault()
-                                                    event.currentTarget.focus()
-                                                    handleDragStart(room.id, time, Date.now())
-                                                }}
-                                                onMouseEnter={() =>
-                                                    handleDragEnter(room.id, time, Date.now())
-                                                }
-                                                onClick={(event) => {
-                                                    if (event.detail !== 0) {
-                                                        return
-                                                    }
-
-                                                    onSelectSlot({
-                                                        roomId: room.id,
-                                                        date: selectedDate,
-                                                        startTime: time,
-                                                        endTime: addThirtyMinutes(time),
-                                                    })
-                                                }}
-                                            >
-                                                <span aria-hidden="true">{isPast ? '—' : '+'}</span>
-                                            </button>
-                                        </td>
-                                    )
-                                })}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
     )
