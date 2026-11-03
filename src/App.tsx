@@ -18,6 +18,7 @@ import AccountControls from './components/AccountControls'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import { createBooking, fetchBookings, updateBooking, deleteBooking } from './lib/bookingApi'
+import { supabase } from './lib/supabase'
 
 function App() {
   const { user, isLoading } = useAuth()
@@ -62,6 +63,37 @@ function App() {
       isActive = false
     }
   }, [])
+
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('bookings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+        },
+        async () => {
+          try {
+            const updatedBookings = await fetchBookings()
+            setBookings(updatedBookings)
+          } catch (error) {
+            console.error(
+              'Ошибка обновления бронирований через Realtime:',
+              error
+            )
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      void supabase.removeChannel(channel)
+    }
+  }, [])
+
 
 
   function handleCloseBooking() {
@@ -125,26 +157,30 @@ function App() {
     setBookingSaveError('')
 
 
-    try {
-      console.time('Сохранение в Supabase')
 
+    try {
       if (bookingToEdit) {
         await updateBooking(savedBooking, user.id)
+
+        setBookings((current) =>
+          current.map((booking) =>
+            booking.id === savedBooking.id
+              ? { ...savedBooking, userId: user.id }
+              : booking
+          )
+        )
       } else {
         await createBooking(savedBooking, user.id)
+
+        setBookings((current) => [
+          ...current,
+          { ...savedBooking, userId: user.id },
+        ])
       }
 
-      console.timeEnd('Сохранение в Supabase')
-
-      console.time('Повторная загрузка бронирований')
-
-      const updatedBookings = await fetchBookings()
-
-      console.timeEnd('Повторная загрузка бронирований')
-
-      setBookings(updatedBookings)
       handleCloseBooking()
     }
+
     finally {
       console.timeEnd('Полное время сохранения')
       setIsSavingBooking(false)
