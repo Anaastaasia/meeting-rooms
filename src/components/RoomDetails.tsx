@@ -3,6 +3,7 @@ import type { Booking } from '../data/bookings'
 import type { BookingSelection } from '../types/booking'
 import Schedule from './Schedule'
 import RoomGallery from './RoomGallery'
+import { useAuth } from '../contexts/useAuth'
 
 type RoomDetailsProps = {
     room: Room
@@ -25,6 +26,7 @@ function RoomDetails({
     onSelectSlot,
     onEditBooking,
 }: RoomDetailsProps) {
+    const { user } = useAuth()
     return (
         <section
             className="room-details"
@@ -54,6 +56,7 @@ function RoomDetails({
                 bookings={bookings}
                 selectedDate={selectedDate}
                 isLoading={isLoading}
+                currentUserId={user?.id ?? null}
                 isUnavailable={isUnavailable}
                 onDateChange={onDateChange}
                 onSelectSlot={onSelectSlot}

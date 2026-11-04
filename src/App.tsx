@@ -337,6 +337,7 @@ function App() {
               <Schedule
                 rooms={rooms}
                 bookings={bookings}
+                currentUserId={user?.id ?? null}
                 selectedDate={selectedDate}
                 isLoading={bookingsLoading}
                 isUnavailable={isScheduleUnavailable}
@@ -368,7 +369,9 @@ function App() {
             path="/bookings"
             element={
               <BookingList
-                bookings={bookings}
+                bookings={bookings.filter(
+                  (booking) => booking.userId === user?.id
+                )}
                 onEdit={handleEditBooking}
               />
             }

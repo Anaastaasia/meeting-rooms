@@ -427,7 +427,7 @@
 .schedule__scroll {
   width: 100%;
   min-width: 0;
-  max-height: 560px;
+  height: max(400px, calc(100dvh - 208px));
   overflow: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
@@ -584,7 +584,7 @@
   background: #f3f4f0;
   box-shadow: none;
   opacity: 1;
-  cursor: not-allowed;
+  cursor: url('/cursors/blocked.svg') 12 12, not-allowed;
 }
 
 .schedule__table .schedule__booking {
@@ -636,7 +636,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.schedule__booking-button:hover:not(:disabled) {
+.schedule__booking-button:hover:not([aria-disabled="true"]) {
   background: var(--room-bg);
   box-shadow: inset 0 0 0 1px var(--room-accent);
 }
@@ -645,8 +645,9 @@
   outline-offset: -3px;
 }
 
-.schedule__booking-button:disabled {
+.schedule__booking-button[aria-disabled="true"] {
   opacity: 1;
+  cursor: url('/cursors/blocked.svg') 12 12, not-allowed;
 }
 
 /* Окна и формы */
@@ -775,24 +776,37 @@
 
 .booking-list__open {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   gap: 24px;
   width: 100%;
+  min-height: 132px;
   padding: 20px 24px;
+
   border: 1px solid var(--color-border);
-  border-left: 5px solid var(--room-accent);
   border-radius: var(--radius-card);
+
   color: var(--color-text);
   background: var(--color-surface);
+
   font-weight: 400;
   line-height: 1.5;
   text-align: left;
 }
 
-.booking-list__open:hover:not(:disabled) {
+button.booking-list__open {
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+button.booking-list__open:hover {
   border-color: var(--room-accent);
   background: #f8faf5;
+}
+
+button.booking-list__open:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
 }
 
 .booking-list__info {
@@ -1024,6 +1038,162 @@
 .bookings-error button:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+/* Переключатель вкладок бронирований */
+
+.booking-list__tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  margin: 16px 0 24px;
+
+  background: #f1f3ef;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.booking-list__tabs button {
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+
+  color: #64746a;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.booking-list__tabs button:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.booking-list__tabs button.active {
+  background: #ffffff;
+  color: #24523f;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.booking-list__tabs button:focus-visible {
+  outline: 2px solid #24523f;
+  outline-offset: 2px;
+}
+
+/* Статусы бронирований */
+
+.booking-list__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  align-self: stretch;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.booking-list__status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.booking-list__status--upcoming {
+  background: #eaf0e9;
+  color: #456554;
+}
+
+.booking-list__status--ongoing {
+  background: #e0f1dc;
+  color: #286b35;
+}
+
+.booking-list__status--completed {
+  align-self: flex-start;
+  flex-shrink: 0;
+  height: fit-content;
+  background: #f0f0f0;
+  color: #686868;
+}
+
+
+/* Подсказка для недоступных бронирований */
+
+.booking-tooltip {
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: max-content;
+    max-width: min(400px, calc(100vw - 24px));
+    padding: 11px 13px;
+    border: 1px solid var(--color-border);
+    border-radius: 9px;
+    color: var(--color-text);
+    background: var(--color-surface);
+    box-shadow: 0 5px 20px rgb(0 0 0 / 12%);
+    font-size: 13px;
+    line-height: 1.4;
+    pointer-events: none;
+    white-space: pre-line;
+}
+
+.booking-tooltip__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 17px;
+    height: 17px;
+    border: 1px solid var(--color-muted);
+    border-radius: 50%;
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 700;
+    white-space: pre-line;
+}
+
+/* Фирменный курсор для недоступных бронирований */
+
+.schedule__booking-button[aria-disabled="true"] {
+  opacity: 1;
+  cursor: url('/cursors/blocked.svg') 12 12, not-allowed;
+}
+
+
+@media (max-width: 600px) {
+  .booking-list__open {
+    min-height: 0;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .booking-list__title {
+    font-size: 17px;
+  }
+
+  .booking-list__actions {
+    gap: 16px;
+  }
+
+  .booking-list__status {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .booking-list__open-label {
+    font-size: 12px;
+  }
 }
 
 @keyframes schedule-spin {

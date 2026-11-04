@@ -15,80 +15,92 @@ export const rooms: Room[] = [
   {
     id: 'elbrus',
     name: 'Эльбрус',
-    capacity: 6,
-    equipment: ['Телевизор', 'Маркерная доска'],
+    capacity: 4,
+    equipment: ['Экран', 'Видеосвязь'],
     images: [
       {
         src: '/rooms/elbrus.jpg',
         alt: 'Переговорная Эльбрус: общий вид',
-      },
-      {
-        src: '/rooms/elbrus-2.jpg',
-        alt: 'Переговорная Эльбрус: второй ракурс',
-      },
-      {
-        src: '/rooms/elbrus-3.jpg',
-        alt: 'Переговорная Эльбрус: третий ракурс',
       },
     ],
   },
   {
     id: 'altai',
     name: 'Алтай',
-    capacity: 10,
-    equipment: ['Проектор', 'Видеосвязь'],
+    capacity: 22,
+    equipment: ['Экран', 'Маркерная доска'],
     images: [
       {
         src: '/rooms/altai.jpg',
-        alt: 'Переговорная Алтай: стол, 10 стульев, доска',
+        alt: 'Переговорная Алтай: общий вид',
       },
       {
         src: '/rooms/altai-2.jpg',
         alt: 'Переговорная Алтай: второй ракурс',
-      },
-      {
-        src: '/rooms/altai-3.jpg',
-        alt: 'Переговорная Алтай: третий ракурс',
       },
     ],
   },
   {
     id: 'baikal',
     name: 'Байкал',
-    capacity: 4,
-    equipment: ['Телевизор'],
+    capacity: 12,
+    equipment: ['Экран', 'Видеосвязь', 'Маркерная доска'],
     images: [
       {
         src: '/rooms/baikal.jpg',
-        alt: 'Переговорная Байкал: стол, 4 стула, телевизор',
+        alt: 'Переговорная Байкал: общий вид',
       },
       {
         src: '/rooms/baikal-2.jpg',
         alt: 'Переговорная Байкал: второй ракурс',
       },
+    ],
+  },
+  {
+    id: 'setun',
+    name: 'Сетунь',
+    capacity: 8,
+    equipment: ['Экран', 'Проектор', 'Видеосвязь'],
+    images: [
       {
-        src: '/rooms/baikal-3.jpg',
-        alt: 'Переговорная Байкал: третий ракурс',
+        src: '/rooms/setun.jpg',
+        alt: 'Переговорная Сетунь: общий вид',
+      },
+      {
+        src: '/rooms/setun-2.jpg',
+        alt: 'Переговорная Сетунь: второй ракурс',
       },
     ],
   },
   {
-    id: 'sibir',
-    name: 'Сибирь',
-    capacity: 6,
-    equipment: ['Проектор'],
+    id: 'vega',
+    name: 'Вега',
+    capacity: 12,
+    equipment: ['Экран', 'Маркерная доска'],
     images: [
       {
-        src: '/rooms/sibir.jpg',
-        alt: 'Переговорная Сибирь: общий вид',
+        src: '/rooms/vega.jpg',
+        alt: 'Переговорная Вега: общий вид',
       },
       {
-        src: '/rooms/sibir-2.jpg',
-        alt: 'Переговорная Сибирь: второй ракурс',
+        src: '/rooms/vega-2.jpg',
+        alt: 'Переговорная Вега: второй ракурс',
+      },
+    ],
+  },
+  {
+    id: 'agate',
+    name: 'Агат',
+    capacity: 8,
+    equipment: ['Экран', 'Маркерная доска'],
+    images: [
+      {
+        src: '/rooms/agate.jpg',
+        alt: 'Переговорная Агат: общий вид',
       },
       {
-        src: '/rooms/sibir-3.jpg',
-        alt: 'Переговорная Сибирь: третий ракурс',
+        src: '/rooms/agate-2.jpg',
+        alt: 'Переговорная Агат: второй ракурс',
       },
     ],
   },

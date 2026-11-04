@@ -9,11 +9,13 @@ import type { BookingSelection } from '../types/booking'
 import { useEffect, useId, useRef, useState } from 'react'
 import { hasBookingConflict } from '../utils/bookingConflicts'
 import { Link } from 'react-router'
+import BookingTooltip from './BookingTooltip'
 
 
 type ScheduleProps = {
     rooms: Room[]
     bookings: Booking[]
+    currentUserId: string | null
     isLoading: boolean
     selectedDate: string
     isUnavailable: boolean
@@ -69,6 +71,7 @@ function getBookingSlots(booking: Booking): number {
 function Schedule({
     rooms,
     bookings,
+    currentUserId,
     isLoading,
     isUnavailable,
     selectedDate,
@@ -79,6 +82,51 @@ function Schedule({
     const headingId = useId()
     const dateInputId = useId()
     const [now, setNow] = useState(() => Date.now())
+    const [tooltip, setTooltip] = useState<{
+        anchor: HTMLElement
+        message: string
+        point: { x: number; y: number }
+    } | null>(null)
+
+    const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    function closeTooltip() {
+        if (tooltipTimerRef.current !== null) {
+            clearTimeout(tooltipTimerRef.current)
+            tooltipTimerRef.current = null
+        }
+
+        setTooltip(null)
+    }
+
+    function showTooltip(
+        anchor: HTMLElement,
+        message: string,
+        point: { x: number; y: number },
+        delayed = false
+    ) {
+        if (tooltipTimerRef.current !== null) {
+            clearTimeout(tooltipTimerRef.current)
+            tooltipTimerRef.current = null
+        }
+
+        if (delayed) {
+            tooltipTimerRef.current = setTimeout(() => {
+                setTooltip({ anchor, message, point })
+                tooltipTimerRef.current = null
+            }, 250)
+        } else {
+            setTooltip({ anchor, message, point })
+        }
+    }
+
+    useEffect(() => {
+        return () => {
+            if (tooltipTimerRef.current !== null) {
+                clearTimeout(tooltipTimerRef.current)
+            }
+        }
+    }, [])
 
     useEffect(() => {
         function updateNow() {
@@ -401,11 +449,17 @@ function Schedule({
                                         }
 
                                         if (startingBooking) {
-                                            const bookingStart = new Date(
-                                                `${startingBooking.date}T${startingBooking.startTime}:00+03:00`
+                                            const bookingEnd = new Date(
+                                                `${startingBooking.date}T${startingBooking.endTime}:00+03:00`
                                             ).getTime()
 
-                                            const canEdit = bookingStart > now
+                                            const isCompleted = bookingEnd <= now
+
+                                            const isOwnBooking =
+                                                currentUserId !== null &&
+                                                startingBooking.userId === currentUserId
+
+                                            const canEdit = !isCompleted && isOwnBooking
 
                                             return (
                                                 <td
@@ -418,8 +472,55 @@ function Schedule({
                                                     <button
                                                         type="button"
                                                         className="schedule__booking-button"
-                                                        disabled={!canEdit}
-                                                        onClick={() => onEditBooking(startingBooking)}
+                                                        aria-disabled={!canEdit}
+
+                                                        onMouseEnter={(event) => {
+                                                            if (canEdit || window.matchMedia('(hover: none)').matches) {
+                                                                return
+                                                            }
+
+                                                            showTooltip(
+                                                                event.currentTarget,
+                                                                isCompleted
+                                                                    ? 'Встреча завершена. Редактирование недоступно.'
+                                                                    : 'Чужое бронирование.\nРедактировать может только создатель.',
+                                                                { x: event.clientX, y: event.clientY },
+                                                                true
+                                                            )
+                                                        }}
+                                                        onMouseLeave={closeTooltip}
+                                                        onFocus={(event) => {
+                                                            if (canEdit) return
+
+                                                            const rect = event.currentTarget.getBoundingClientRect()
+
+                                                            showTooltip(
+                                                                event.currentTarget,
+                                                                isCompleted
+                                                                    ? 'Встреча завершена. Редактирование недоступно.'
+                                                                    : 'Чужое бронирование.\nРедактировать может только создатель.',
+                                                                { x: rect.left + rect.width / 2, y: rect.top + 16 }
+                                                            )
+                                                        }}
+                                                        onBlur={closeTooltip}
+                                                        onClick={(event) => {
+                                                            if (canEdit) {
+                                                                closeTooltip()
+                                                                onEditBooking(startingBooking)
+                                                                return
+                                                            }
+
+                                                            if (window.matchMedia('(hover: none)').matches) {
+                                                                showTooltip(
+                                                                    event.currentTarget,
+                                                                    isCompleted
+                                                                        ? 'Встреча завершена. Редактирование недоступно.'
+                                                                        : 'Чужое бронирование.\nРедактировать может только создатель.',
+                                                                    { x: event.clientX, y: event.clientY }
+                                                                )
+                                                            }
+                                                        }}
+
                                                         aria-label={
                                                             canEdit
                                                                 ? `Изменить встречу «${startingBooking.title}», ${startingBooking.startTime}–${startingBooking.endTime}`
@@ -500,6 +601,13 @@ function Schedule({
                     </table>
                 </div>
             </div>
+
+            <BookingTooltip
+                anchor={tooltip?.anchor ?? null}
+                message={tooltip?.message ?? ''}
+                point={tooltip?.point ?? null}
+                onClose={closeTooltip}
+            />
         </section>
     )
 }

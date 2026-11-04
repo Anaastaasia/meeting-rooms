@@ -71,8 +71,26 @@ function BookingForm({
             `${selection.date}T${selection.startTime}:00+03:00`
         )
 
-        if (startDateTime.getTime() <= Date.now()) {
-            setError('Начало встречи уже наступило. Сохранить бронирование нельзя.')
+        const endDateTime = new Date(
+            `${selection.date}T${endTime}:00+03:00`
+        )
+
+        const now = Date.now()
+
+        if (!bookingToEdit && startDateTime.getTime() <= now) {
+            setError('Нельзя создать встречу с началом в прошлом.')
+            return
+        }
+
+        if (bookingToEdit && startDateTime.getTime() !== new Date(
+            `${bookingToEdit.date}T${bookingToEdit.startTime}:00+03:00`
+        ).getTime()) {
+            setError('Нельзя изменить начало существующей встречи.')
+            return
+        }
+
+        if (endDateTime.getTime() <= now) {
+            setError('Окончание встречи должно быть в будущем.')
             return
         }
 
