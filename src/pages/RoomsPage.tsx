@@ -11,7 +11,7 @@ function RoomsPage() {
 
     const capacityParam = Number(searchParams.get('capacity') ?? 0)
 
-    const minCapacity = [0, 2, 4, 6, 8, 10, 20].includes(capacityParam)
+    const minCapacity = [0, 10, 15, 20, 25].includes(capacityParam)
         ? capacityParam
         : 0
 
@@ -77,12 +77,10 @@ function RoomsPage() {
                         }
                     >
                         <option value={0}>Любое</option>
-                        <option value={2}>От 2 человек</option>
-                        <option value={4}>От 4 человек</option>
-                        <option value={6}>От 6 человек</option>
-                        <option value={8}>От 8 человек</option>
                         <option value={10}>От 10 человек</option>
+                        <option value={15}>От 15 человек</option>
                         <option value={20}>От 20 человек</option>
+                        <option value={25}>От 25 человек</option>
                     </select>
                 </div>
 
