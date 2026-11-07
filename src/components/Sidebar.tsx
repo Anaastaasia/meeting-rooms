@@ -47,7 +47,6 @@ function Sidebar() {
 
 
             <div className="sidebar__footer">
-                <p>Больше пространства<br />для важных встреч</p>
 
                 <svg
                     className="sidebar__landscape"

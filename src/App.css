@@ -83,12 +83,6 @@
   color: #82917f;
 }
 
-.sidebar__footer p {
-  position: relative;
-  z-index: 1;
-  color: var(--color-muted);
-  font-size: 13px;
-}
 
 .sidebar__landscape {
   position: absolute;
